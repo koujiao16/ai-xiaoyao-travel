@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <defs>
+    <linearGradient id="paper" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFDF7"/>
+      <stop offset="1" stop-color="#F9F3E6"/>
+    </linearGradient>
+    <linearGradient id="ink" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#101A33" stop-opacity="0.85"/>
+      <stop offset="1" stop-color="#0A1020" stop-opacity="0.65"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#E7D08B"/>
+      <stop offset="1" stop-color="#C7A24E"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#paper)"/>
+  <g opacity="0.25">
+    <path d="M120 140h1360M120 260h1360M120 380h1360M120 500h1360M120 620h1360M120 740h1360" stroke="#101A33" stroke-opacity="0.25"/>
+    <path d="M220 80v760M420 80v760M620 80v760M820 80v760M1020 80v760M1220 80v760M1420 80v760" stroke="#101A33" stroke-opacity="0.18"/>
+  </g>
+  <g opacity="0.55">
+    <path d="M360 610c120-210 330-320 610-320s490 110 610 320" fill="none" stroke="url(#ink)" stroke-width="3"/>
+    <path d="M520 640c80-120 180-190 310-190s230 70 310 190" fill="none" stroke="url(#ink)" stroke-width="2" opacity="0.6"/>
+  </g>
+  <g>
+    <circle cx="760" cy="360" r="10" fill="url(#gold)"/>
+    <circle cx="980" cy="420" r="10" fill="url(#gold)"/>
+    <circle cx="660" cy="500" r="10" fill="url(#gold)"/>
+    <circle cx="860" cy="560" r="10" fill="url(#gold)"/>
+    <path d="M760 360L980 420L860 560L660 500Z" fill="none" stroke="#C7A24E" stroke-opacity="0.65" stroke-width="2"/>
+  </g>
+  <text x="80" y="860" fill="#101A33" fill-opacity="0.55" font-family="ui-sans-serif, system-ui" font-size="18" letter-spacing="4">
+    PLACEHOLDER · OPERATION NETWORK MAP
+  </text>
+</svg>
