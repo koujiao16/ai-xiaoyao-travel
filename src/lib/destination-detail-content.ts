@@ -1,7 +1,12 @@
-export type DestinationSlug = "shaanxi" | "heilongjiang" | "jilin" | "henan";
+export type DestinationSlug = "shaanxi" | "northeast" | "henan";
 
 export type FeaturedResource = {
   imagePath: string;
+  title: string;
+  description: string;
+};
+
+export type DestinationCapability = {
   title: string;
   description: string;
 };
@@ -10,8 +15,9 @@ export type DestinationDetailContent = {
   slug: DestinationSlug;
   title: string;
   positioning: string;
+  heroImageSrc?: string;
   featuredResources: FeaturedResource[];
-  guideImagePaths: [string, string, string, string];
+  capabilities: DestinationCapability[];
 };
 
 const destinationDetailsEn: Record<DestinationSlug, DestinationDetailContent> = {
@@ -20,100 +26,94 @@ const destinationDetailsEn: Record<DestinationSlug, DestinationDetailContent> = 
     title: "Shaanxi",
     positioning:
       "Ancient capital culture, Xi'an ground services, study tour resources and Qinling routes.",
+    heroImageSrc: "/images/shaanxi-destination-hero.png",
     featuredResources: [
       {
-        imagePath: "/images/destinations/shaanxi/resources/version-museum.jpg",
-        title: "National Archives of Publications and Culture",
-        description: "Exclusive cultural resources and curated visit coordination.",
+        imagePath: "/images/shaanxi-resource-01.jpg",
+        title: "National Archives Resource",
+        description: "Exclusive cultural access with in-depth guided interpretation.",
       },
       {
-        imagePath: "/images/destinations/shaanxi/resources/qinling-exploration.jpg",
-        title: "Qinling Scientific Exploration",
-        description: "Nature observation, ecological exploration and outdoor learning programs.",
+        imagePath: "/images/shaanxi-resource-02.jpg",
+        title: "Qinling Ecology Exploration",
+        description: "Wildlife observation, ecology workshops and nature exploration.",
       },
       {
-        imagePath: "/images/destinations/shaanxi/resources/industrial-study.jpg",
-        title: "Industrial Study Programs",
-        description: "Smart manufacturing, aviation technology and practical learning experiences.",
+        imagePath: "/images/shaanxi-resource-03.jpg",
+        title: "Industrial & Technology Study Tour",
+        description:
+          "Connecting automotive manufacturing and premium industrial visit resources.",
       },
       {
-        imagePath: "/images/destinations/shaanxi/resources/zhongnan-taoism.jpg",
-        title: "Zhongnan Mountain Taoist Culture Experience",
-        description: "Traditional culture, mountain landscapes and distinctive local experiences.",
+        imagePath: "/images/shaanxi-destination-hero.png",
+        title: "Intangible Cultural Heritage Experience",
+        description: "Traditional craft experiences and interactive cultural programs.",
       },
     ],
-    guideImagePaths: [
-      "/images/destinations/shaanxi/guides/guide-01.jpg",
-      "/images/destinations/shaanxi/guides/guide-02.jpg",
-      "/images/destinations/shaanxi/guides/guide-03.jpg",
-      "/images/destinations/shaanxi/guides/guide-04.jpg",
-    ],
-  },
-  heilongjiang: {
-    slug: "heilongjiang",
-    title: "Heilongjiang",
-    positioning: "Ice and snow travel, border culture, wellness travel and seasonal group products.",
-    featuredResources: [
+    capabilities: [
       {
-        imagePath: "/images/destinations/heilongjiang/resources/harbin-ice-snow.jpg",
-        title: "Harbin Ice and Snow Resources",
-        description: "Winter culture, seasonal activities and city experiences.",
+        title: "Xi'an Ground Operations",
+        description: "Stable local reception, transfers and day-to-day destination execution.",
       },
       {
-        imagePath: "/images/destinations/heilongjiang/resources/wudalianchi-volcano.jpg",
-        title: "Wudalianchi Volcanic Landscapes",
-        description: "Geological landscapes, ecological observation and wellness resources.",
+        title: "Exclusive Cultural Access",
+        description: "Specialist heritage resources with guided interpretation support.",
       },
       {
-        imagePath: "/images/destinations/heilongjiang/resources/yichun-forest.jpg",
-        title: "Yichun Forest Wellness",
-        description: "Forest retreats, summer wellness and nature-based experiences.",
+        title: "Boutique Group Delivery",
+        description: "Small-group pacing, flexible routing and partner-ready packaging.",
       },
       {
-        imagePath: "/images/destinations/heilongjiang/resources/border-culture.jpg",
-        title: "Border Culture and Northeast Experiences",
-        description: "Border routes, regional culture and seasonal Northeast China programs.",
+        title: "B2B Quality Assurance",
+        description: "Contract-ready service standards that protect partner reputation.",
       },
-    ],
-    guideImagePaths: [
-      "/images/destinations/heilongjiang/guides/guide-01.jpg",
-      "/images/destinations/heilongjiang/guides/guide-02.jpg",
-      "/images/destinations/heilongjiang/guides/guide-03.jpg",
-      "/images/destinations/heilongjiang/guides/guide-04.jpg",
     ],
   },
-  jilin: {
-    slug: "jilin",
-    title: "Jilin",
+  northeast: {
+    slug: "northeast",
+    title: "Northeast China",
     positioning:
-      "Changbai Mountain, winter resources, natural scenery and regional group reception.",
+      "Ice and snow tourism, natural landscapes, border culture and seasonal travel experiences across Heilongjiang and Jilin.",
+    heroImageSrc: "/images/northeast-destination-hero.png",
     featuredResources: [
       {
-        imagePath: "/images/destinations/jilin/resources/changbai-mountain.jpg",
-        title: "Changbai Mountain",
-        description: "Tianchi Lake, forest landscapes and four-season nature experiences.",
+        imagePath: "/images/northeast-destination-hero.png",
+        title: "Changbai Mountain Nature",
+        description: "Tianchi, alpine forests and four-season mountain landscapes.",
       },
       {
-        imagePath: "/images/destinations/jilin/resources/yanji-culture.jpg",
-        title: "Yanji Korean Ethnic Culture",
-        description: "Regional culture, local cuisine, photography and immersive experiences.",
+        imagePath: "/images/northeast-border.jpg",
+        title: "Northeast Border Culture",
+        description: "Border routes, Korean ethnic culture and cross-region experiences.",
       },
       {
-        imagePath: "/images/destinations/jilin/resources/tumen-border.jpg",
-        title: "Tumen Border Experience",
-        description: "Border landscapes and regional cultural routes.",
+        imagePath: "/images/northeast-snow.jpg",
+        title: "Winter & Ice Snow",
+        description: "Ice festivals, winter scenery and seasonal snow programs.",
       },
       {
-        imagePath: "/images/destinations/jilin/resources/changbai-resort.jpg",
-        title: "Changbai Mountain Resort Resources",
-        description: "Resort stays, family experiences and boutique small-group programs.",
+        imagePath: "/images/northeast-wellness.jpg",
+        title: "Forest Ecology & Wellness",
+        description: "Cool-climate forests, lakeside retreats and wellness resources.",
       },
     ],
-    guideImagePaths: [
-      "/images/destinations/jilin/guides/guide-01.jpg",
-      "/images/destinations/jilin/guides/guide-02.jpg",
-      "/images/destinations/jilin/guides/guide-03.jpg",
-      "/images/destinations/jilin/guides/guide-04.jpg",
+    capabilities: [
+      {
+        title: "Inbound Group Reception",
+        description: "Reliable entry handling for overseas teams across Northeast gateways.",
+      },
+      {
+        title: "Cross-Province Operations",
+        description: "Heilongjiang–Jilin multi-city routing with coordinated ground delivery.",
+      },
+      {
+        title: "Seasonal Product Support",
+        description: "Ice-snow, border and summer wellness programs for partner packaging.",
+      },
+      {
+        title: "B2B Execution Standards",
+        description: "Clear operational notes and quality commitments for trade partners.",
+      },
     ],
   },
   henan: {
@@ -121,34 +121,41 @@ const destinationDetailsEn: Record<DestinationSlug, DestinationDetailContent> = 
     title: "Henan",
     positioning:
       "Central China culture, provincial heritage resources and multi-city route connections.",
+    heroImageSrc: "/images/henan-destination-hero.png",
     featuredResources: [
       {
-        imagePath: "/images/destinations/henan/resources/henan-museum.jpg",
-        title: "Henan Museum",
-        description: "Central China civilization, museum learning and cultural experiences.",
-      },
-      {
-        imagePath: "/images/destinations/henan/resources/shaolin-culture.jpg",
-        title: "Shaolin Culture",
-        description: "Martial arts, Zen culture and educational activities.",
-      },
-      {
-        imagePath: "/images/destinations/henan/resources/longmen-grottoes.jpg",
+        imagePath: "/images/henan-resource-01.jpg",
         title: "Longmen Grottoes",
-        description: "Grotto art, ancient capital culture and historical routes.",
+        description: "Grotto art, ancient-capital culture and heritage sightseeing routes.",
       },
       {
-        imagePath: "/images/destinations/henan/resources/ancient-capital-route.jpg",
-        title: "Central China Ancient Capital Routes",
-        description:
-          "Cultural connections across Zhengzhou, Luoyang, Kaifeng and surrounding destinations.",
+        imagePath: "/images/henan-resource-02.jpg",
+        title: "Shaolin Culture",
+        description: "Martial arts, Zen heritage and cultural experience programs.",
+      },
+      {
+        imagePath: "/images/henan-resource-03.jpg",
+        title: "Central China Heritage",
+        description: "Museum learning, historic cities and multi-site cultural links.",
       },
     ],
-    guideImagePaths: [
-      "/images/destinations/henan/guides/guide-01.jpg",
-      "/images/destinations/henan/guides/guide-02.jpg",
-      "/images/destinations/henan/guides/guide-03.jpg",
-      "/images/destinations/henan/guides/guide-04.jpg",
+    capabilities: [
+      {
+        title: "Central China Routing",
+        description: "Multi-city connections across Henan’s core heritage destinations.",
+      },
+      {
+        title: "Heritage Experience Delivery",
+        description: "Grottoes, Shaolin and cultural programs with local operational support.",
+      },
+      {
+        title: "Group Reception Support",
+        description: "Inbound team handling, transfers and on-ground destination services.",
+      },
+      {
+        title: "Partner Product Packaging",
+        description: "B2B-ready itineraries designed for trade partners and group markets.",
+      },
     ],
   },
 };
@@ -158,113 +165,134 @@ const destinationDetailsZh: Record<DestinationSlug, DestinationDetailContent> = 
     slug: "shaanxi",
     title: "陕西",
     positioning: "古都文化、西安地接、研学资源与秦岭线路。",
+    heroImageSrc: "/images/shaanxi-destination-hero.png",
     featuredResources: [
       {
-        imagePath: "/images/destinations/shaanxi/resources/version-museum.jpg",
-        title: "国家版本馆",
-        description: "独家文化资源与参访对接。",
+        imagePath: "/images/shaanxi-resource-01.jpg",
+        title: "国家版本馆独家资源",
+        description: "专属文化资源与深度讲解体验。",
       },
       {
-        imagePath: "/images/destinations/shaanxi/resources/qinling-exploration.jpg",
-        title: "秦岭科考",
-        description: "自然观察、生态探索与户外研学。",
+        imagePath: "/images/shaanxi-resource-02.jpg",
+        title: "秦岭生态科考",
+        description: "动植物观察、生态课堂与自然探索。",
       },
       {
-        imagePath: "/images/destinations/shaanxi/resources/industrial-study.jpg",
-        title: "工业研学",
-        description: "智能制造、航空科技与实践课程。",
+        imagePath: "/images/shaanxi-resource-03.jpg",
+        title: "工业与科技研学",
+        description: "连接汽车制造、高端工业参访资源。",
       },
       {
-        imagePath: "/images/destinations/shaanxi/resources/zhongnan-taoism.jpg",
-        title: "终南山道教文化体验",
-        description: "传统文化、山野环境与特色体验。",
+        imagePath: "/images/shaanxi-destination-hero.png",
+        title: "非遗文化体验",
+        description: "传统技艺体验与文化互动课程。",
       },
     ],
-    guideImagePaths: destinationDetailsEn.shaanxi.guideImagePaths,
+    capabilities: [
+      {
+        title: "西安地接执行",
+        description: "稳定的接送、接待与目的地日常落地执行。",
+      },
+      {
+        title: "独家文化资源对接",
+        description: "特色文化遗产资源与专业讲解支持。",
+      },
+      {
+        title: "精品小团交付",
+        description: "灵活行程节奏与适合合作伙伴打包的产品结构。",
+      },
+      {
+        title: "B2B 品质保障",
+        description: "可写入合同的服务标准，保护合作伙伴口碑。",
+      },
+    ],
   },
-  heilongjiang: {
-    slug: "heilongjiang",
-    title: "黑龙江",
-    positioning: "冰雪旅游、边境文化、疗休养与季节性团队产品。",
+  northeast: {
+    slug: "northeast",
+    title: "中国东北",
+    positioning: "冰雪旅游、自然风光、边境文化与季节性旅行体验，覆盖黑龙江与吉林区域资源。",
+    heroImageSrc: "/images/northeast-destination-hero.png",
     featuredResources: [
       {
-        imagePath: "/images/destinations/heilongjiang/resources/harbin-ice-snow.jpg",
-        title: "哈尔滨冰雪资源",
-        description: "冰雪文化、冬季活动与城市体验。",
+        imagePath: "/images/northeast-destination-hero.png",
+        title: "长白山自然资源",
+        description: "天池、高山森林与四季山地景观。",
       },
       {
-        imagePath: "/images/destinations/heilongjiang/resources/wudalianchi-volcano.jpg",
-        title: "五大连池火山地貌",
-        description: "自然地质、生态观察与康养资源。",
+        imagePath: "/images/northeast-border.jpg",
+        title: "东北边境文化体验",
+        description: "边境线路、朝鲜族文化与跨区域体验。",
       },
       {
-        imagePath: "/images/destinations/heilongjiang/resources/yichun-forest.jpg",
-        title: "伊春森林康养",
-        description: "森林氧吧、避暑疗休养与自然体验。",
+        imagePath: "/images/northeast-snow.jpg",
+        title: "冰雪旅游资源",
+        description: "冰雪节庆、冬季景观与季节性产品。",
       },
       {
-        imagePath: "/images/destinations/heilongjiang/resources/border-culture.jpg",
-        title: "边境文化与东北特色体验",
-        description: "边境线路、地方文化与季节性产品。",
+        imagePath: "/images/northeast-wellness.jpg",
+        title: "森林生态与康养资源",
+        description: "清凉山林、湖畔度假与康养资源。",
       },
     ],
-    guideImagePaths: destinationDetailsEn.heilongjiang.guideImagePaths,
-  },
-  jilin: {
-    slug: "jilin",
-    title: "吉林",
-    positioning: "长白山、冬季资源、自然风光与区域团队接待。",
-    featuredResources: [
+    capabilities: [
       {
-        imagePath: "/images/destinations/jilin/resources/changbai-mountain.jpg",
-        title: "长白山",
-        description: "天池、森林资源与四季自然体验。",
+        title: "入境团队接待",
+        description: "覆盖东北门户城市的海外团队稳定接待能力。",
       },
       {
-        imagePath: "/images/destinations/jilin/resources/yanji-culture.jpg",
-        title: "延吉朝鲜族文化",
-        description: "民俗、美食、旅拍与区域文化体验。",
+        title: "黑吉跨省联线执行",
+        description: "黑龙江—吉林多城联线与协调一致的地接交付。",
       },
       {
-        imagePath: "/images/destinations/jilin/resources/tumen-border.jpg",
-        title: "图们边境",
-        description: "边境风光与区域文化线路。",
+        title: "季节性产品支持",
+        description: "冰雪、边境与夏季康养等主题，便于合作伙伴打包。",
       },
       {
-        imagePath: "/images/destinations/jilin/resources/changbai-resort.jpg",
-        title: "长白山度假资源",
-        description: "度假区、亲子体验与精品小团产品。",
+        title: "B2B 落地标准",
+        description: "清晰的操作说明与品质承诺，服务贸易合作伙伴。",
       },
     ],
-    guideImagePaths: destinationDetailsEn.jilin.guideImagePaths,
   },
   henan: {
     slug: "henan",
     title: "河南",
     positioning: "中原文化、省内资源与跨区域线路联动。",
+    heroImageSrc: "/images/henan-destination-hero.png",
     featuredResources: [
       {
-        imagePath: "/images/destinations/henan/resources/henan-museum.jpg",
-        title: "河南博物院",
-        description: "中原文明、文博课程与文化体验。",
+        imagePath: "/images/henan-resource-01.jpg",
+        title: "龙门石窟",
+        description: "石窟艺术、古都文化与观光线路。",
       },
       {
-        imagePath: "/images/destinations/henan/resources/shaolin-culture.jpg",
+        imagePath: "/images/henan-resource-02.jpg",
         title: "少林文化",
-        description: "武术、禅宗文化与研学活动。",
+        description: "武术禅宗与文化体验项目。",
       },
       {
-        imagePath: "/images/destinations/henan/resources/longmen-grottoes.jpg",
-        title: "洛阳龙门石窟",
-        description: "石窟艺术、古都文化与历史线路。",
-      },
-      {
-        imagePath: "/images/destinations/henan/resources/ancient-capital-route.jpg",
-        title: "中原古都文化联线",
-        description: "郑州、洛阳、开封等多城市文化资源。",
+        imagePath: "/images/henan-resource-03.jpg",
+        title: "中原文明体验",
+        description: "博物学习、历史名城与多点联线。",
       },
     ],
-    guideImagePaths: destinationDetailsEn.henan.guideImagePaths,
+    capabilities: [
+      {
+        title: "中原线路联线",
+        description: "串联河南核心遗产目的地的多城市行程能力。",
+      },
+      {
+        title: "遗产体验执行",
+        description: "石窟、少林与文化项目的本地落地支持。",
+      },
+      {
+        title: "团队接待支持",
+        description: "入境团队接待、接送与目的地服务保障。",
+      },
+      {
+        title: "合作伙伴产品打包",
+        description: "面向贸易合作伙伴的 B2B 行程与产品结构。",
+      },
+    ],
   },
 };
 
@@ -284,12 +312,10 @@ export function getDestinationDetailLabels(locale: "en" | "zh") {
     return {
       heroEyebrow: "目的地",
       featuredTitle: "特色资源",
-      guidesTitle: "优秀导游",
-      guidesDescription:
-        "精选当地导游，覆盖文化讲解、研学课程与团队接待等方向。",
-      guideNickname: "昵称待补充",
-      guideSpecialty: "擅长方向待补充",
-      imageComingSoon: "图片即将上线",
+      featuredEyebrow: "本地资源",
+      capabilityTitle: "目的地服务能力",
+      capabilityEyebrow: "接待与执行",
+      productsComingSoon: "产品即将上线，敬请期待。",
       finalCtaTitle: "定制您的目的地项目",
       finalCtaDescription:
         "请发送人数、出行日期与核心需求，我们将提供产品建议与当地执行支持。",
@@ -301,12 +327,10 @@ export function getDestinationDetailLabels(locale: "en" | "zh") {
   return {
     heroEyebrow: "Destination",
     featuredTitle: "Featured Resources",
-    guidesTitle: "Experienced Local Guides",
-    guidesDescription:
-      "Selected local guides with experience in destination interpretation, educational programs and group reception.",
-    guideNickname: "Guide nickname coming soon",
-    guideSpecialty: "Specialty details coming soon",
-    imageComingSoon: "Image coming soon",
+    featuredEyebrow: "Local Resources",
+    capabilityTitle: "Destination Capabilities",
+    capabilityEyebrow: "Reception & Delivery",
+    productsComingSoon: "Products coming soon.",
     finalCtaTitle: "Plan Your Destination Program",
     finalCtaDescription:
       "Send your group size, travel dates and key requirements. Our team will provide product ideas and local operation support.",

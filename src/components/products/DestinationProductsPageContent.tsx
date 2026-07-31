@@ -12,18 +12,11 @@ import {
 import { cn } from "@/lib/cn";
 import { localePath, type SiteLocale } from "@/lib/locale-paths";
 import { getDestinationProductsContent } from "@/lib/destination-products-content";
-import { NortheastProductCard } from "@/components/products/NortheastProductCard";
-import { LeisureTravelQualityBadge } from "@/components/products/LeisureTravelQualityBadge";
-import {
-  getNortheastCategories,
-  getNortheastListingLabels,
-} from "@/lib/northeast-products-content";
+import { ProductCard } from "@/components/products/ProductCard";
+import { getProductsByDestination } from "@/data/products";
 
 const quickJumpLinkClass =
   "inline-flex items-center justify-center rounded-full border border-navy-900/12 bg-white px-3.5 py-2 text-sm font-medium text-navy-900/80 transition-colors hover:border-gold-400/40 hover:text-navy-950 focus:outline-none focus-visible:ring-2 focus-visible:ring-gold-400/50";
-
-const directionTagClass =
-  "rounded-lg border border-navy-900/8 bg-white px-4 py-2.5 text-sm text-navy-900/75";
 
 function ProductFinalCta({
   locale,
@@ -71,19 +64,9 @@ function ProductFinalCta({
   );
 }
 
-function CategoryPlaceholder({ message }: { message: string }) {
-  return (
-    <p className="rounded-xl2 border border-navy-900/10 bg-white px-6 py-12 text-center text-sm leading-relaxed text-navy-900/55">
-      {message}
-    </p>
-  );
-}
-
 export function DestinationProductsPageContent({ locale }: { locale: SiteLocale }) {
   const content = getDestinationProductsContent(locale);
-  const northeastLabels = getNortheastListingLabels(locale);
-  const northeastCategories = getNortheastCategories(locale);
-  const showQualityBadge = northeastCategories.some((c) => c.products.length > 0);
+  const northeastProducts = getProductsByDestination("northeast", "Regular Product");
 
   return (
     <main>
@@ -111,74 +94,46 @@ export function DestinationProductsPageContent({ locale }: { locale: SiteLocale 
             <p
               className={cn(
                 "text-base leading-relaxed text-ivory-100/70 sm:text-[0.9375rem]",
-                content.heroSubtitle ? "mt-4" : "mt-4"
+                "mt-4"
               )}
             >
               {content.heroDescription}
             </p>
-            <nav
-              aria-label={locale === "zh" ? "页面导航" : "Page sections"}
-              className="mt-8 flex flex-wrap gap-2"
-            >
-              {content.quickJump.map((item) => (
-                <a key={item.id} href={`#${item.id}`} className={quickJumpLinkClass}>
-                  {item.label}
-                </a>
+            {content.quickJump.length > 0 ? (
+              <nav
+                aria-label={locale === "zh" ? "页面导航" : "Page sections"}
+                className="mt-8 flex flex-wrap gap-2"
+              >
+                {content.quickJump.map((item) => (
+                  <a key={item.id} href={`#${item.id}`} className={quickJumpLinkClass}>
+                    {item.label}
+                  </a>
+                ))}
+              </nav>
+            ) : null}
+          </div>
+        </Container>
+      </section>
+
+      <Section tone="ivory" id="northeast">
+        <Container>
+          <Title
+            title={content.listingTitle}
+            description={content.listingDescription}
+          />
+          {northeastProducts.length > 0 ? (
+            <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
+              {northeastProducts.map((product) => (
+                <ProductCard key={product.id} product={product} locale={locale} />
               ))}
-            </nav>
-          </div>
-        </Container>
-      </section>
-
-      <section className="border-b border-navy-900/8 bg-[#faf6ee] py-12 sm:py-16">
-        <Container>
-          <Title title={content.productDirections.title} />
-          <div className="mt-6 flex flex-wrap gap-2">
-            {content.productDirections.items.map((item) => (
-              <span key={item} className={directionTagClass}>
-                {item}
-              </span>
-            ))}
-          </div>
-        </Container>
-      </section>
-
-      <Section tone="ivory">
-        <Container>
-          {showQualityBadge ? (
-            <LeisureTravelQualityBadge
-              label={northeastLabels.qualityBadgeLabel}
-              size="section"
-              tone="light"
-              className="mb-10"
-            />
-          ) : null}
-          <div className="space-y-16 sm:space-y-20">
-            {northeastCategories.map((category) => (
-              <div key={category.id} id={category.id} className="scroll-mt-24">
-                <Title
-                  title={category.title}
-                  description={category.description}
-                />
-                {category.products.length > 0 ? (
-                  <div className="mt-8 grid gap-6 sm:grid-cols-2">
-                    {category.products.map((product) => (
-                      <NortheastProductCard
-                        key={product.slug}
-                        product={product}
-                        labels={northeastLabels}
-                        locale={locale}
-                      />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="mt-8">
-                    <CategoryPlaceholder message={content.placeholderMessage} />
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
+            </div>
+          ) : (
+            <p className="mt-10 text-sm leading-relaxed text-navy-900/55">
+              {locale === "zh"
+                ? "产品即将上线，敬请期待。"
+                : "Products coming soon."}
+            </p>
+          )}
         </Container>
       </Section>
 

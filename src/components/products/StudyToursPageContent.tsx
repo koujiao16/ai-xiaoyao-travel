@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import Image from "next/image";
 import { Container } from "@/components/ui/Container";
 import { Section } from "@/components/ui/Section";
 import { Title } from "@/components/ui/Title";
@@ -15,6 +16,7 @@ import {
 import { localePath, type SiteLocale } from "@/lib/locale-paths";
 import {
   getStudyToursContent,
+  type StudyToursCapability,
   type StudyToursResource,
   type StudyToursVideoStory,
 } from "@/lib/study-tours-content";
@@ -23,6 +25,36 @@ import { cn } from "@/lib/cn";
 function isResourcePdfAvailable(pdfPath: string) {
   const filePath = path.join(process.cwd(), "public", pdfPath.replace(/^\//, ""));
   return fs.existsSync(filePath);
+}
+
+function CapabilityCard({ item }: { item: StudyToursCapability }) {
+  return (
+    <article className="group relative min-h-[280px] overflow-hidden rounded-xl2 border border-navy-900/10 shadow-[0_10px_36px_rgba(15,23,42,0.12)] sm:min-h-[300px]">
+      <Image
+        src={item.imageSrc}
+        alt={item.imageAlt}
+        fill
+        unoptimized
+        className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
+        sizes="(max-width: 1024px) 100vw, 50vw"
+      />
+      <div
+        className="absolute inset-0 bg-gradient-to-t from-[rgba(6,20,34,0.94)] via-[rgba(6,20,34,0.58)] to-[rgba(6,20,34,0.18)]"
+        aria-hidden
+      />
+      <div className="absolute inset-x-0 bottom-0 flex flex-col justify-end p-5 sm:p-6">
+        <h3 className="font-[family-name:var(--font-display)] text-xl tracking-tightish text-white sm:text-2xl">
+          {item.titleZh}
+        </h3>
+        <p className="mt-1.5 text-xs font-medium tracking-[0.14em] text-gold-300/90 sm:text-[0.8125rem]">
+          {item.titleEn}
+        </p>
+        <p className="mt-3 max-w-xl text-sm leading-relaxed text-ivory-100/82">
+          {item.description}
+        </p>
+      </div>
+    </article>
+  );
 }
 
 function VideoStoryCard({ story }: { story: StudyToursVideoStory }) {
@@ -131,9 +163,9 @@ export function StudyToursPageContent({ locale }: { locale: SiteLocale }) {
       <Section tone="ivory">
         <Container>
           <Title title={content.whatWeProvide.title} />
-          <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-8 grid gap-4 lg:grid-cols-2">
             {content.whatWeProvide.items.map((item) => (
-              <FeatureCard key={item} tone="ivory" title={item} />
+              <CapabilityCard key={item.titleEn} item={item} />
             ))}
           </div>
         </Container>

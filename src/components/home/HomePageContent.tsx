@@ -1,11 +1,10 @@
-import { ButtonLink } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
-import { FeatureCard } from "@/components/ui/FeatureCard";
-import { IconArrowRight } from "@/components/ui/Icons";
+import { IconMessage } from "@/components/ui/Icons";
 import { BrandCard } from "@/components/home/BrandCard";
+import { DestinationShowcaseCard } from "@/components/home/DestinationShowcaseCard";
 import { NetworkMapPreview } from "@/components/home/NetworkMapPreview";
 import { HomeFinalSection } from "@/components/home/HomeFinalSection";
-import { ProductLineCard } from "@/components/home/ProductLineCard";
+import { ProductShowcaseCard } from "@/components/home/ProductShowcaseCard";
 import { Media } from "@/components/ui/Media";
 import { Section } from "@/components/ui/Section";
 import { Stat } from "@/components/ui/Stat";
@@ -39,8 +38,8 @@ export function HomePageContent({
             <div className="absolute inset-0 bg-gradient-to-r from-[rgba(6,20,34,0.85)] via-[rgba(6,20,34,0.55)] to-[rgba(6,20,34,0.25)]" />
           </div>
 
-          <Container className="relative py-16 sm:py-24 lg:py-32">
-            <div className="max-w-3xl">
+          <Container className="relative py-16 sm:py-24 lg:py-28">
+            <div className="max-w-5xl">
               <p className="mb-4 inline-flex max-w-full items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs tracking-wide text-ivory-100/80">
                 {hero.badge}
               </p>
@@ -54,23 +53,29 @@ export function HomePageContent({
               ) : null}
               <p
                 className={cn(
-                  "text-lg text-ivory-100/80 sm:text-xl",
+                  "max-w-3xl text-lg text-ivory-100/80 sm:text-xl",
                   hero.brandLine ? "mt-4" : "mt-5"
                 )}
               >
                 {hero.subtitle}
               </p>
-              <p className="mt-6 max-w-2xl text-base leading-relaxed text-ivory-100/75">
-                {hero.description}
-              </p>
 
-              <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
-                <ButtonLink href={p("/products")} variant="secondary">
-                  {hero.exploreServices} <IconArrowRight className="ml-2 h-4 w-4" />
-                </ButtonLink>
-                <ButtonLink href={p("/contact")} variant="primary">
-                  {hero.getProposal}
-                </ButtonLink>
+              <div className="mt-10 grid grid-cols-1 gap-3 sm:mt-12 sm:grid-cols-3 sm:gap-4">
+                {quality.cards.map((card) => (
+                  <div
+                    key={card.title}
+                    className="rounded-2xl border border-white/15 bg-white/[0.05] px-5 py-5 backdrop-blur-[2px] sm:px-6"
+                  >
+                    <h3 className="text-lg font-semibold tracking-tightish text-white">
+                      {card.title}
+                    </h3>
+                    {card.description ? (
+                      <p className="mt-2 text-sm leading-relaxed text-ivory-100/70 sm:text-[0.9375rem]">
+                        {card.description}
+                      </p>
+                    ) : null}
+                  </div>
+                ))}
               </div>
             </div>
           </Container>
@@ -110,22 +115,18 @@ export function HomePageContent({
               description={destinations.description}
               invert
             />
-            <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="mt-14 grid grid-cols-1 gap-5 lg:grid-cols-3 lg:gap-6">
               {destinations.cards.map((card) => (
-                <FeatureCard
+                <DestinationShowcaseCard
                   key={card.title}
-                  href={p(card.href)}
-                  tone="navy"
-                  hover="subtle"
                   title={card.title}
+                  subtitle={card.subtitle}
                   description={card.description}
+                  href={p(card.href)}
+                  imageSrc={card.imageSrc}
+                  imageAlt={card.imageAlt}
                 />
               ))}
-            </div>
-            <div className="mt-10">
-              <ButtonLink href={p("/destinations")} variant="secondary">
-                {destinations.cta} <IconArrowRight className="ml-2 h-4 w-4" />
-              </ButtonLink>
             </div>
           </Container>
         </Section>
@@ -138,49 +139,19 @@ export function HomePageContent({
               description={products.description}
               className="max-w-3xl"
             />
-            <div className="mt-14 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="mt-14 flex flex-col gap-5 sm:gap-6">
               {products.cards.map((card) => (
-                <ProductLineCard
+                <ProductShowcaseCard
                   key={card.title}
                   title={card.title}
+                  subtitle={card.subtitle}
                   description={card.description}
-                  href={p(card.href)}
-                  exploreLabel={products.exploreLabel}
+                  href={card.href === "#" ? "#" : p(card.href)}
+                  imageSrc={card.imageSrc}
+                  imageAlt={card.imageAlt}
                 />
               ))}
             </div>
-            <div className="mt-12">
-              <ButtonLink href={p("/products")} variant="primary">
-                {products.cta}
-              </ButtonLink>
-            </div>
-          </Container>
-        </Section>
-
-        <Section tone="navy" className="!bg-[#08121f]">
-          <Container>
-            <div className="mx-auto max-w-3xl text-center">
-              <Title
-                eyebrow={quality.eyebrow}
-                title={quality.title}
-                description={quality.description}
-                invert
-                className="mx-auto"
-              />
-            </div>
-            <div className="mx-auto mt-14 grid max-w-5xl gap-5 lg:grid-cols-3">
-              {quality.cards.map((card) => (
-                <FeatureCard
-                  key={card.title}
-                  tone="navy"
-                  title={card.title}
-                  description={card.description}
-                />
-              ))}
-            </div>
-            <p className="mx-auto mt-8 max-w-3xl text-center text-sm text-white/[0.55]">
-              {quality.note}
-            </p>
           </Container>
         </Section>
 
@@ -213,6 +184,18 @@ export function HomePageContent({
         labels={finalCta}
         contactHref={p("/contact")}
       />
+
+      <a
+        href="#home-final-cta-heading"
+        aria-label={hero.getProposal}
+        title={hero.getProposal}
+        className="fixed bottom-6 right-6 z-50 flex h-14 w-14 flex-col items-center justify-center rounded-full border border-gold-300/70 bg-gold-400 text-navy-950 shadow-[0_10px_28px_rgba(0,0,0,0.28)] hover:bg-gold-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-300 focus-visible:ring-offset-2 focus-visible:ring-offset-navy-950"
+      >
+        <IconMessage className="h-5 w-5" />
+        <span className="mt-0.5 max-w-[3.25rem] truncate text-center text-[9px] font-semibold leading-none tracking-tight">
+          {hero.getProposal}
+        </span>
+      </a>
     </>
   );
 }

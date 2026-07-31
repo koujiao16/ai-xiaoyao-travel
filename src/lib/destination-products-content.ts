@@ -11,9 +11,9 @@ export type DestinationProductsContent = {
   heroTitle: string;
   heroSubtitle: string;
   heroDescription: string;
+  listingTitle: string;
+  listingDescription: string;
   quickJump: QuickJumpItem[];
-  productDirections: { title: string; items: string[] };
-  placeholderMessage: string;
   finalCta: {
     title: string;
     description: string;
@@ -24,36 +24,21 @@ export type DestinationProductsContent = {
 };
 
 const destinationProductsContentEn: DestinationProductsContent = {
-  metadataTitle: "Four Destination Products",
+  metadataTitle: "Northeast Regular Products",
   heroEyebrow: "Products",
-  heroTitle: "Four Destination Products",
-  heroSubtitle: "",
+  heroTitle: "Northeast Regular Products",
+  heroSubtitle:
+    "Curated Jilin, Heilongjiang and cross-region Northeast programs, supporting overseas group reception and customized delivery.",
   heroDescription:
-    "Regular small-group, customized and cross-region programs supported by our local destination operations.",
-  quickJump: [
-    { id: "jilin-programs", label: "Jilin Programs" },
-    { id: "heilongjiang-programs", label: "Heilongjiang Programs" },
-    { id: "northeast-cross-region", label: "Northeast Cross-region Routes" },
-    { id: "shaanxi-programs", label: "Shaanxi Programs" },
-    { id: "henan-programs", label: "Henan Programs" },
-    { id: "northwest-routes", label: "Northwest China Routes" },
-  ],
-  productDirections: {
-    title: "Product Directions",
-    items: [
-      "Regular Group Routes",
-      "Boutique Small Groups",
-      "FIT & Private Custom Routes",
-      "Seasonal Programs",
-      "Study Tour Extensions",
-      "Cross-region Routes",
-    ],
-  },
-  placeholderMessage: "More programs coming soon.",
+    "Boutique small-group and multi-destination programs across Jilin and Heilongjiang, supported by Ai Xiaoyao quality operations.",
+  listingTitle: "Northeast Regular Products",
+  listingDescription:
+    "Curated Jilin, Heilongjiang and cross-region Northeast programs, supporting overseas group reception and customized delivery.",
+  quickJump: [{ id: "northeast", label: "Northeast Regular Products" }],
   finalCta: {
-    title: "Explore Our Destination Products",
+    title: "Explore Northeast Destination Products",
     description:
-      "Send your target market, preferred destination and group requirements. Our team will provide suitable product ideas.",
+      "Send your target market, preferred route and group requirements. Our team will provide suitable product ideas.",
     contactLabel: "Contact Us",
     whatsappLabel: "WhatsApp",
     emailLabel: "Email",
@@ -61,35 +46,19 @@ const destinationProductsContentEn: DestinationProductsContent = {
 };
 
 const destinationProductsContentZh: DestinationProductsContent = {
-  metadataTitle: "四大目的地常规产品",
+  metadataTitle: "东北常规产品",
   heroEyebrow: "产品体系",
-  heroTitle: "四大目的地常规产品",
-  heroSubtitle: "",
+  heroTitle: "东北常规产品",
+  heroSubtitle: "精选吉林、黑龙江及东北跨区域精品线路，支持海外团队接待与定制化执行。",
   heroDescription:
-    "依托区域落地资源，为合作伙伴提供成熟稳定的常规团队、精品小团、定制产品及跨区域联线方案。",
-  quickJump: [
-    { id: "jilin-programs", label: "吉林常规产品" },
-    { id: "heilongjiang-programs", label: "黑龙江常规产品" },
-    { id: "northeast-cross-region", label: "东北跨区域联线" },
-    { id: "shaanxi-programs", label: "陕西常规产品" },
-    { id: "henan-programs", label: "河南常规产品" },
-    { id: "northwest-routes", label: "西北联线产品" },
-  ],
-  productDirections: {
-    title: "产品方向",
-    items: [
-      "常规团队线路",
-      "精品小团",
-      "散客与私家定制",
-      "季节性产品",
-      "研学延伸线路",
-      "跨区域联线",
-    ],
-  },
-  placeholderMessage: "更多产品持续更新中。",
+    "依托爱逍遥体系品质支持，精选吉林、黑龙江及东北跨区域精品线路，服务入境团队与合作伙伴打包需求。",
+  listingTitle: "东北常规产品",
+  listingDescription:
+    "精选吉林、黑龙江及东北跨区域精品线路，支持海外团队接待与定制化执行。",
+  quickJump: [{ id: "northeast", label: "东北常规产品" }],
   finalCta: {
-    title: "了解四大目的地常规产品",
-    description: "请发送目标市场、目的地与团队需求，我们将提供适合的产品建议。",
+    title: "了解东北常规产品",
+    description: "请发送目标市场、线路偏好与团队需求，我们将提供适合的产品建议。",
     contactLabel: "联系我们",
     whatsappLabel: "WhatsApp",
     emailLabel: "Email",

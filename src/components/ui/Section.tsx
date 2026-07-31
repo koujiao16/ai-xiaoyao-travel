@@ -6,10 +6,12 @@ export function Section({
   tone,
   className,
   children,
+  id,
 }: {
   tone: Tone;
   className?: string;
   children: React.ReactNode;
+  id?: string;
 }) {
   const base =
     tone === "navy"
@@ -17,7 +19,7 @@ export function Section({
       : "bg-ivory-50 text-navy-950";
 
   return (
-    <section className={cn("py-14 sm:py-20", base, className)}>
+    <section id={id} className={cn("py-14 sm:py-20 scroll-mt-24", base, className)}>
       {children}
     </section>
   );

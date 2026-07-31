@@ -1,5 +1,15 @@
 import type { SiteLocale } from "@/lib/locale-paths";
 
+export type StudyToursCapability = {
+  /** Chinese title — always shown as the primary card heading */
+  titleZh: string;
+  /** English subtitle — always shown in gold under the Chinese title */
+  titleEn: string;
+  description: string;
+  imageSrc: string;
+  imageAlt: string;
+};
+
 export type StudyToursVideoStory = {
   title: string;
   category: string;
@@ -28,7 +38,7 @@ export type StudyToursContent = {
   heroDescription: string;
   whatWeProvide: {
     title: string;
-    items: string[];
+    items: StudyToursCapability[];
   };
   bestFor: {
     title: string;
@@ -66,13 +76,54 @@ const studyToursContentEn: StudyToursContent = {
   whatWeProvide: {
     title: "What We Provide",
     items: [
-      "Museum Learning",
-      "Historical Culture Programs",
-      "Intangible Cultural Heritage Experiences",
-      "Charity Activities",
-      "Nature Exploration",
-      "Industrial & Technology Learning",
-      "Cross-city Study Routes",
+      {
+        titleZh: "陕西历史博物馆大咖讲解",
+        titleEn: "Museum Expert Interpretation",
+        description:
+          "Expert museum educators guide students through cultural relics and stories to deepen understanding of Chinese history and culture.",
+        imageSrc: "/images/product-study-tour.png",
+        imageAlt: "Museum expert interpretation for study tour students",
+      },
+      {
+        titleZh: "专业定制研学手册",
+        titleEn: "Customized Study Materials",
+        description:
+          "Study handbooks designed around school needs, including task cards, observation records and learning goals.",
+        imageSrc: "/images/products/shaanxi/drunk-changan-4d-cover.jpg",
+        imageAlt: "Customized study materials and learning observation",
+      },
+      {
+        titleZh: "非遗文化体验",
+        titleEn: "Intangible Cultural Heritage Experience",
+        description:
+          "Hands-on participation in Shaanxi intangible cultural heritage projects to experience traditional culture.",
+        imageSrc: "/images/henan-resource-02.jpg",
+        imageAlt: "Intangible cultural heritage experience",
+      },
+      {
+        titleZh: "公益乡村墙体彩绘",
+        titleEn: "Rural Public Welfare Projects",
+        description:
+          "Join rural community projects and wall murals to build social responsibility.",
+        imageSrc: "/images/products/shaanxi/changan-city-4d-cover.jpg",
+        imageAlt: "Rural public welfare and community study activities",
+      },
+      {
+        titleZh: "秦岭四宝生态科考",
+        titleEn: "Qinling Wildlife & Ecology Exploration",
+        description:
+          "Explore the giant panda, golden snub-nosed monkey, crested ibis and takin while learning Qinling ecological conservation.",
+        imageSrc: "/images/shaanxi-resource-03.jpg",
+        imageAlt: "Qinling wildlife and ecology exploration",
+      },
+      {
+        titleZh: "工业与科技研学",
+        titleEn: "Industrial & Technology Exploration",
+        description:
+          "Visit technology enterprises such as BYD and Geely to learn about smart manufacturing and new energy.",
+        imageSrc: "/images/product-mice.png",
+        imageAlt: "Industrial and technology study tour exploration",
+      },
     ],
   },
   bestFor: {
@@ -159,13 +210,50 @@ const studyToursContentZh: StudyToursContent = {
   whatWeProvide: {
     title: "我们提供",
     items: [
-      "博物馆课程",
-      "历史文化研学",
-      "非遗体验",
-      "公益活动",
-      "自然探索",
-      "工业与科技研学",
-      "跨城市研学线路",
+      {
+        titleZh: "陕西历史博物馆大咖讲解",
+        titleEn: "Museum Expert Interpretation",
+        description:
+          "专业文博老师深度讲解，通过文物故事帮助学生理解中华历史文化。",
+        imageSrc: "/images/product-study-tour.png",
+        imageAlt: "陕西历史博物馆大咖讲解",
+      },
+      {
+        titleZh: "专业定制研学手册",
+        titleEn: "Customized Study Materials",
+        description:
+          "根据学校需求设计研学手册，包括任务卡、观察记录和学习目标。",
+        imageSrc: "/images/products/shaanxi/drunk-changan-4d-cover.jpg",
+        imageAlt: "专业定制研学手册",
+      },
+      {
+        titleZh: "非遗文化体验",
+        titleEn: "Intangible Cultural Heritage Experience",
+        description: "参与陕西特色非遗项目，通过实践体验传统文化。",
+        imageSrc: "/images/henan-resource-02.jpg",
+        imageAlt: "非遗文化体验",
+      },
+      {
+        titleZh: "公益乡村墙体彩绘",
+        titleEn: "Rural Public Welfare Projects",
+        description: "参与乡村公益活动，通过墙体彩绘培养社会责任感。",
+        imageSrc: "/images/products/shaanxi/changan-city-4d-cover.jpg",
+        imageAlt: "公益乡村墙体彩绘",
+      },
+      {
+        titleZh: "秦岭四宝生态科考",
+        titleEn: "Qinling Wildlife & Ecology Exploration",
+        description: "探索大熊猫、金丝猴、朱鹮、羚牛，学习秦岭生态保护。",
+        imageSrc: "/images/shaanxi-resource-03.jpg",
+        imageAlt: "秦岭四宝生态科考",
+      },
+      {
+        titleZh: "工业与科技研学",
+        titleEn: "Industrial & Technology Exploration",
+        description: "参观比亚迪、吉利等科技企业，了解智能制造和新能源技术。",
+        imageSrc: "/images/product-mice.png",
+        imageAlt: "工业与科技研学",
+      },
     ],
   },
   bestFor: {

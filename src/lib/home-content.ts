@@ -23,16 +23,27 @@ export type HomeContent = {
     eyebrow?: string;
     title: string;
     description: string;
-    cards: { title: string; description: string; href: string }[];
-    cta: string;
+    cards: {
+      title: string;
+      subtitle: string;
+      description: string;
+      href: string;
+      imageSrc: string;
+      imageAlt: string;
+    }[];
   };
   products: {
     eyebrow?: string;
     title: string;
     description: string;
-    cards: { title: string; description: string; href: string }[];
-    exploreLabel: string;
-    cta: string;
+    cards: {
+      title: string;
+      subtitle?: string;
+      description: string;
+      href: string;
+      imageSrc: string;
+      imageAlt: string;
+    }[];
   };
   quality: {
     eyebrow?: string;
@@ -63,11 +74,10 @@ export const homeContentEn: HomeContent = {
     badge:
       "Operated by Heilongjiang Xiaoyao International Travel Agency · Originated from Minjian Travel Group",
     title: "Ai Xiaoyao",
-    subtitle: "China B2B Destination Management & Travel Operations",
-    description:
-      "Local reception, inbound groups, study tours, corporate programs, cruise groups and customized China routes.",
+    subtitle: "China B2B Destination Management & Travel Operations Service Provider",
+    description: "",
     exploreServices: "Explore Services",
-    getProposal: "Get a Proposal",
+    getProposal: "Get Proposal",
     imageAlt: "Xiaoyao Travel premium destination operations",
   },
   network: {
@@ -87,98 +97,94 @@ export const homeContentEn: HomeContent = {
     eyebrow: "Destinations",
     title: "Destination Capabilities",
     description:
-      "Four key destination regions support multi-city China programs and different types of group reception.",
+      "Three core destination regions support multi-city China programs and different types of group reception.",
     cards: [
       {
-        title: "Shaanxi",
+        title: "Northeast China",
+        subtitle: "Heilongjiang & Jilin",
         description:
-          "Ancient capital culture, Xi’an ground services, study tour resources and Qinling routes.",
-        href: "/destinations/shaanxi",
+          "Ice and snow tourism, natural landscapes, border culture and seasonal travel experiences.",
+        href: "/destinations/northeast",
+        imageSrc: "/images/northeast-destination-hero.png",
+        imageAlt: "Northeast China destination operations",
       },
       {
-        title: "Heilongjiang",
+        title: "Shaanxi",
+        subtitle: "Ancient Capital Region",
         description:
-          "Ice and snow travel, wellness groups, border culture and seasonal programs.",
-        href: "/destinations/heilongjiang",
+          "Ancient capital culture, world heritage sites, study tour resources and premium destination services.",
+        href: "/destinations/shaanxi",
+        imageSrc: "/images/shaanxi-destination-hero.png",
+        imageAlt: "Shaanxi destination operations",
       },
       {
         title: "Henan",
+        subtitle: "Central China",
         description:
-          "Central China culture, provincial resources and multi-city route connections.",
+          "Central China culture, world heritage sites, historical experiences and regional travel connections.",
         href: "/destinations/henan",
-      },
-      {
-        title: "Jilin",
-        description:
-          "Changbai Mountain, winter scenery, natural landscapes and regional group reception.",
-        href: "/destinations/jilin",
+        imageSrc: "/images/henan-destination-hero.png",
+        imageAlt: "Henan destination operations",
       },
     ],
-    cta: "View Destination Overview",
   },
   products: {
     eyebrow: "Products",
     title: "Product Lines",
     description:
-      "Designed for B2B partners, our product system includes classic China routes, destination products, study tours, corporate programs, special interest travel and cruise group services.",
+      "Designed for B2B partners, our product lines cover China-themed travel, group reception and customized destination operations.",
     cards: [
-      {
-        title: "Classic China Routes",
-        description:
-          "Multi-city classic routes for overseas groups — Beijing, Xi’an, Shanghai and beyond.",
-        href: "/products/classic-china-routes",
-      },
-      {
-        title: "Four Destination Products",
-        description:
-          "Regular and customized products across Shaanxi, Heilongjiang, Henan and Jilin.",
-        href: "/products/destination-products",
-      },
       {
         title: "Study Tours",
         description:
-          "Museums, cultural heritage, charity activities, nature exploration and youth programs.",
+          "Educational travel programs covering history, museums, intangible heritage and nature exploration.",
         href: "/products/study-tours",
+        imageSrc: "/images/product-study-tour.png",
+        imageAlt: "Study tours product line",
       },
       {
-        title: "Corporate & MICE",
+        title: "MICE & Corporate Events",
         description:
-          "Corporate reception, meetings, incentive travel, team building and business visits.",
+          "Corporate incentives, meetings, events and premium group reception services.",
         href: "/products/corporate-mice",
+        imageSrc: "/images/product-mice.png",
+        imageAlt: "MICE and corporate events product line",
       },
       {
-        title: "Special Interest Travel",
+        title: "Yangtze River Cruises",
         description:
-          "Food, light hiking, photography, heritage experiences and local lifestyle routes.",
-        href: "/products/special-interest-travel",
-      },
-      {
-        title: "Cruise Groups",
-        description:
-          "Shore excursions, pre/post-cruise extensions and cruise group ground handling.",
+          "Scenic Yangtze River cruise programs with premium leisure and customized group services.",
         href: "/products/cruise-groups",
+        imageSrc: "/images/product-yangtze-cruise.png",
+        imageAlt: "Yangtze River cruises product line",
+      },
+      {
+        title: "Wellness & Health Retreats",
+        description:
+          "Forest wellness, hot spring retreats and high-quality slow travel experiences.",
+        href: "#",
+        imageSrc: "/images/product-wellness.png",
+        imageAlt: "Wellness and health retreats product line",
       },
     ],
-    exploreLabel: "Explore Program",
-    cta: "Explore Product Lines",
   },
   quality: {
     eyebrow: "Quality",
     title: "Quality Travel, Honest Reception",
     description:
-      "We focus on transparent communication, reliable on-site execution and long-term trust with B2B travel partners.",
+      "We are committed to accurate product information, clear quality commitments and partner reputation protection, helping B2B partners safeguard client experience and brand trust.",
     cards: [
       {
-        title: "Clear Product Information",
-        description: "Scope, inclusions and operational notes stated upfront.",
+        title: "Accurate Product Information",
+        description: "Presented clearly, with no false promises.",
       },
       {
-        title: "Reliable Ground Execution",
-        description: "On-site delivery with clear roles, timing and accountability.",
+        title: "Clear Quality Commitments",
+        description: "Clear standards and quality written into contracts.",
       },
       {
         title: "Partner Reputation Protection",
-        description: "We prioritize brand safety and guest experience for your clients.",
+        description: "Stable execution, protecting partner reputation.",
       },
     ],
     note: "Key quality commitments can be written into the contract.",
@@ -227,8 +233,7 @@ export const homeContentZh: HomeContent = {
     title: "Ai Xiaoyao",
     brandLine: "爱逍遥旅游",
     subtitle: "中国 B2B 目的地管理与旅游运营服务商",
-    description:
-      "提供地接接待、入境团队、研学旅行、企业会奖、邮轮团队、中国经典联线及定制化旅游服务。",
+    description: "",
     exploreServices: "了解服务",
     getProposal: "获取方案",
     imageAlt: "逍遥旅游中国目的地运营服务",
@@ -247,78 +252,93 @@ export const homeContentZh: HomeContent = {
   },
   destinations: {
     title: "目的地能力",
-    description: "四大重点目的地支持中国多城市联线与不同类型团队接待。",
+    description: "三大核心目的地支持中国多城市联线与不同类型团队接待。",
     cards: [
       {
-        title: "陕西",
-        description: "古都文化、西安地接、研学资源与秦岭线路。",
-        href: "/destinations/shaanxi",
+        title: "中国东北",
+        subtitle: "Northeast China",
+        description: "冰雪旅游、自然风光、边境文化与季节性旅行体验。",
+        href: "/destinations/northeast",
+        imageSrc: "/images/northeast-destination-hero.png",
+        imageAlt: "中国东北目的地运营",
       },
       {
-        title: "黑龙江",
-        description: "冰雪旅游、疗休养、边境文化与季节性产品。",
-        href: "/destinations/heilongjiang",
+        title: "陕西",
+        subtitle: "Shaanxi",
+        description: "古都文化、世界遗产、研学资源与高端目的地服务。",
+        href: "/destinations/shaanxi",
+        imageSrc: "/images/shaanxi-destination-hero.png",
+        imageAlt: "陕西目的地运营",
       },
       {
         title: "河南",
-        description: "中原文化、省内资源与跨区域线路联动。",
+        subtitle: "Henan",
+        description: "中原文化、世界遗产、历史体验与区域旅游联动。",
         href: "/destinations/henan",
-      },
-      {
-        title: "吉林",
-        description: "长白山、冬季资源、自然风光与区域团队接待。",
-        href: "/destinations/jilin",
+        imageSrc: "/images/henan-destination-hero.png",
+        imageAlt: "河南目的地运营",
       },
     ],
-    cta: "查看目的地",
   },
   products: {
     title: "产品体系",
     description:
-      "围绕 B2B 合作伙伴需求，提供中国经典联线、目的地常规产品、研学、企业会奖、特殊兴趣与邮轮团队服务。",
+      "围绕 B2B 合作伙伴需求，提供中国主题旅行、团队接待及定制化目的地运营服务。",
     cards: [
       {
-        title: "中国经典联线",
-        description: "适合境外客人的中国多城市经典线路。",
-        href: "/products/classic-china-routes",
-      },
-      {
-        title: "四大目的地常规产品",
-        description: "基于陕西、黑龙江、河南、吉林的成熟稳定产品体系。",
-        href: "/products/destination-products",
-      },
-      {
         title: "研学旅行",
-        description: "历史文化、博物馆、非遗、公益与自然探索项目。",
+        subtitle: "Study Tours",
+        description: "历史文化、博物馆、非遗体验与自然探索项目。",
         href: "/products/study-tours",
+        imageSrc: "/images/product-study-tour.png",
+        imageAlt: "研学旅行产品",
       },
       {
         title: "企业会奖",
-        description: "企业接待、会议会展、团建、奖励旅游及行业考察。",
+        subtitle: "MICE & Corporate Events",
+        description: "企业奖励旅游、会议活动及高端团队接待。",
         href: "/products/corporate-mice",
+        imageSrc: "/images/product-mice.png",
+        imageAlt: "企业会奖产品",
       },
       {
-        title: "特殊兴趣旅行",
-        description: "美食、轻徒步、摄影、非遗体验与地方生活方式探索。",
-        href: "/products/special-interest-travel",
-      },
-      {
-        title: "邮轮团队",
-        description: "岸上观光、前后延伸线路及邮轮团队地接服务。",
+        title: "三峡邮轮",
+        subtitle: "Yangtze River Cruises",
+        description: "长江风光、高端休闲及定制团队邮轮服务。",
         href: "/products/cruise-groups",
+        imageSrc: "/images/product-yangtze-cruise.png",
+        imageAlt: "三峡邮轮产品",
+      },
+      {
+        title: "康养旅行",
+        subtitle: "Wellness & Health Retreats",
+        description: "森林康养、温泉度假与高品质慢旅行体验。",
+        href: "#",
+        imageSrc: "/images/product-wellness.png",
+        imageAlt: "康养旅行产品",
       },
     ],
-    exploreLabel: "查看产品",
-    cta: "查看产品体系",
   },
   quality: {
     title: "品质旅游，诚信接待",
     description:
-      "我们重视真实宣传、清晰沟通和稳定执行，帮助 B2B 合作伙伴保护客人体验与品牌口碑。",
+      "我们坚持真实产品信息、明确品质承诺与合作伙伴口碑保护，帮助 B2B 合作伙伴维护客户体验与品牌声誉。",
     cards: [
-      { title: "真实产品信息" },
-      { title: "稳定落地执行" },
-      { title: "保护合作伙伴口碑" },
+      {
+        title: "真实产品信息",
+        description:
+          "产品内容、接待标准、行程安排如实呈现，避免过度包装和不实承诺。",
+      },
+      {
+        title: "明确品质承诺",
+        description:
+          "核心接待标准、服务细节与品质要求可在合作方案或合同中明确写入。",
+      },
+      {
+        title: "合作伙伴口碑保护",
+        description:
+          "稳定执行、清晰沟通、及时反馈，帮助 B2B 合作伙伴维护客户体验与品牌声誉。",
+      },
     ],
     note: "关键品质承诺可写入合同。",
   },

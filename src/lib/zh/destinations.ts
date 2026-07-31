@@ -2,32 +2,27 @@
 
 export const zhDestinationsOverview = {
   eyebrow: "目的地",
-  title: "目的地能力",
+  title: "中国核心目的地网络",
   description:
-    "逍遥旅游以陕西、黑龙江、河南、吉林四大重点目的地为基础，支持中国多城市联线、入境团队、研学旅行、企业会奖及定制化团队接待。",
+    "依托陕西、河南、黑龙江、吉林四大运营区域，提供入境团队、研学、企业会奖及定制化旅游服务。",
   cards: [
+    {
+      slug: "northeast",
+      title: "中国东北",
+      description: "冰雪旅游、自然风光、边境文化与季节性旅行体验。",
+    },
     {
       slug: "shaanxi",
       title: "陕西",
-      description: "古都文化、西安地接、研学资源与秦岭线路。",
-    },
-    {
-      slug: "heilongjiang",
-      title: "黑龙江",
-      description: "冰雪旅游、疗休养、边境文化与季节性团队产品。",
+      description: "古都文化、世界遗产、研学资源与高端目的地接待。",
     },
     {
       slug: "henan",
       title: "河南",
-      description: "中原文化、省内资源与跨区域线路联动。",
-    },
-    {
-      slug: "jilin",
-      title: "吉林",
-      description: "长白山、冬季资源、自然风光与区域团队接待。",
+      description: "中原文化、历史遗产与区域线路联动。",
     },
   ],
-  viewDetails: "查看详情",
+  viewDetails: "查看目的地",
 } as const;
 
 export const zhDestinationSlugs = zhDestinationsOverview.cards.map((c) => c.slug);
