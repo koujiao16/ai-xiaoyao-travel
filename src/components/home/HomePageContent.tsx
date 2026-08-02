@@ -1,6 +1,5 @@
 import { Container } from "@/components/ui/Container";
 import { IconMessage } from "@/components/ui/Icons";
-import { BrandCard } from "@/components/home/BrandCard";
 import { DestinationShowcaseCard } from "@/components/home/DestinationShowcaseCard";
 import { NetworkMapPreview } from "@/components/home/NetworkMapPreview";
 import { HomeFinalSection } from "@/components/home/HomeFinalSection";
@@ -21,7 +20,7 @@ export function HomePageContent({
   content: HomeContent;
   locale?: SiteLocale;
 }) {
-  const { hero, network, destinations, products, quality, brands, finalCta } = content;
+  const { hero, network, destinations, products, quality, finalCta } = content;
   const p = (path: string) => localePath(path, locale);
 
   return (
@@ -131,7 +130,7 @@ export function HomePageContent({
           </Container>
         </Section>
 
-        <Section tone="ivory" className="!bg-[#f6f1e8] !py-16 sm:!py-24">
+        <Section tone="ivory" className="!bg-[#f6f1e8] !py-16 sm:!py-20">
           <Container>
             <Title
               eyebrow={products.eyebrow}
@@ -149,27 +148,6 @@ export function HomePageContent({
                   href={card.href === "#" ? "#" : p(card.href)}
                   imageSrc={card.imageSrc}
                   imageAlt={card.imageAlt}
-                />
-              ))}
-            </div>
-          </Container>
-        </Section>
-
-        <Section tone="ivory" className="!bg-[#f6f1e8] !pb-8 sm:!pb-10">
-          <Container>
-            <Title
-              eyebrow={brands.eyebrow}
-              title={brands.title}
-              description={brands.description}
-            />
-            <div className="mt-10 grid gap-4 lg:grid-cols-3 lg:items-stretch">
-              {brands.cards.map((card) => (
-                <BrandCard
-                  key={card.title}
-                  title={card.title}
-                  description={card.description}
-                  logoSrc={card.logoSrc}
-                  logoAlt={card.logoAlt}
                 />
               ))}
             </div>
