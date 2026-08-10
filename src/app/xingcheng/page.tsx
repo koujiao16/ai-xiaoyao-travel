@@ -290,6 +290,7 @@ export default function Home() {
         ShadingType,
         Table,
         TableCell,
+        TableLayoutType,
         TableRow,
         TextRun,
         WidthType,
@@ -449,6 +450,8 @@ export default function Home() {
         children.push(
           new Table({
             width: { size: 100, type: WidthType.PERCENTAGE },
+            layout: TableLayoutType.FIXED,
+            columnWidths: [5000, 5000],
             rows: [
               new TableRow({
                 children: [
@@ -476,14 +479,14 @@ export default function Home() {
               new TableRow({
                 children: [
                   new TableCell({
-                    width: { size: 50, type: WidthType.PERCENTAGE },
+                    width: { size: 5000, type: WidthType.DXA },
                     borders: { top: border, bottom: border, left: border, right: border },
                     shading: { fill: "F8F3EC", type: ShadingType.CLEAR },
                     margins: { top: 140, bottom: 140, left: 180, right: 180 },
                     children: [new Paragraph({ children: [new TextRun({ text: `用餐：${day.meals.length ? day.meals.join("、") : "不含餐"}`, bold: true })] })],
                   }),
                   new TableCell({
-                    width: { size: 50, type: WidthType.PERCENTAGE },
+                    width: { size: 5000, type: WidthType.DXA },
                     borders: { top: border, bottom: border, left: border, right: border },
                     shading: { fill: "F8F3EC", type: ShadingType.CLEAR },
                     margins: { top: 140, bottom: 140, left: 180, right: 180 },
