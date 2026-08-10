@@ -160,6 +160,8 @@ const additionalLibrary: LibraryItem[] = [
 
 const library: LibraryItem[] = [...baseLibrary, ...additionalLibrary];
 
+const lodgingOptions = ["西安", "华山", "临潼", "延安", "壶口", "不住宿"] as const;
+
 const initialDays: DayPlan[] = [
   { id: 1, items: ["pickup"], query: "", touched: false, meals: [], lodging: "西安", photoItems: [] },
   { id: 2, items: ["city-wall", "huashan"], query: "", touched: false, meals: ["早餐"], lodging: "西安", photoItems: [] },
@@ -623,9 +625,11 @@ export default function Home() {
                     <label className="lodging-select">
                       <span>当天住宿</span>
                       <select value={day.lodging} onChange={(event) => updateDay(day.id, { lodging: event.target.value })}>
-                        <option>西安</option>
-                        <option>华山</option>
-                        <option>不住宿</option>
+                        {lodgingOptions.map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))}
                       </select>
                     </label>
                   </div>
