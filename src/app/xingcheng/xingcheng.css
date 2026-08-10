@@ -57,38 +57,10 @@ main.trip-builder { min-height: 100vh; padding-bottom: 9rem; }
 .trip-builder .topbar span { color: var(--muted); font-size: 11px; margin-top: 5px; }
 .trip-builder .library-count { margin-left: auto; color: var(--muted); font-size: 13px; padding: 8px 13px; border: 1px solid var(--line); border-radius: 999px; background: rgba(255,255,255,.52); }
 
-.trip-builder .hero {
-  width: min(1160px, calc(100% - 40px));
-  margin: 0 auto;
-  padding: 54px 60px 132px;
-  border-radius: 30px;
-  color: #fffaf5;
-  background:
-    linear-gradient(115deg, rgba(72, 35, 28, .98), rgba(133, 61, 47, .94)),
-    repeating-linear-gradient(45deg, transparent 0 16px, rgba(255,255,255,.04) 16px 17px);
-  position: relative;
-  overflow: hidden;
-}
-
-.trip-builder .hero::after {
-  content: "行程";
-  position: absolute;
-  right: 42px;
-  bottom: -55px;
-  font-family: "STKaiti", "KaiTi", serif;
-  font-size: 180px;
-  color: rgba(255, 255, 255, .06);
-  transform: rotate(-6deg);
-}
-
-.trip-builder .eyebrow { margin: 0 0 14px; color: #e7c5b7; font-size: 11px; font-weight: 700; letter-spacing: .25em; }
-.trip-builder .hero h1 { max-width: 730px; margin: 0; font-size: clamp(31px, 4.3vw, 52px); line-height: 1.18; letter-spacing: -.035em; font-weight: 680; position: relative; z-index: 1; }
-.trip-builder .hero > p:last-child { margin: 20px 0 0; font-size: 16px; color: rgba(255,250,245,.72); position: relative; z-index: 1; }
-
 .trip-builder .setup-card {
   width: min(1040px, calc(100% - 72px));
   min-height: 118px;
-  margin: -70px auto 0;
+  margin: 20px auto 0;
   padding: 24px 26px;
   display: grid;
   grid-template-columns: minmax(240px, 1fr) 170px auto;
@@ -270,16 +242,11 @@ main.trip-builder { min-height: 100vh; padding-bottom: 9rem; }
 
 @media (max-width: 720px) {
   main.trip-builder { padding-bottom: 11rem; }
-  .trip-builder .topbar, .trip-builder .hero { width: calc(100% - 24px); }
-  .trip-builder .topbar { height: 68px; }
+  .trip-builder .topbar { width: calc(100% - 24px); height: 68px; }
   .trip-builder .library-count { display: none; }
-  .trip-builder .hero { padding: 40px 24px 112px; border-radius: 22px; }
-  .trip-builder .hero::after { right: -45px; font-size: 125px; }
-  .trip-builder .hero h1 { font-size: 32px; }
-  .trip-builder .hero > p:last-child { font-size: 14px; line-height: 1.7; }
-  .trip-builder .setup-card { width: calc(100% - 44px); margin-top: -76px; grid-template-columns: 1fr 112px; padding: 18px; gap: 14px; }
+  .trip-builder .setup-card { width: calc(100% - 24px); margin: 16px auto 0; grid-template-columns: 1fr 112px; padding: 18px; gap: 14px; }
   .trip-builder .sample-button { grid-column: 1 / -1; }
-  .trip-builder .days-section { width: calc(100% - 24px); margin-top: 52px; }
+  .trip-builder .days-section { width: calc(100% - 24px); margin-top: 36px; }
   .trip-builder .fee-section { width: calc(100% - 24px); }
   .trip-builder .section-heading { align-items: start; }
   .trip-builder .section-heading p { width: 120px; text-align: right; line-height: 1.5; }
