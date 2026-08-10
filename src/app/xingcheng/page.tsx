@@ -181,6 +181,8 @@ const emptyDay = (id: number): DayPlan => ({
 export default function Home() {
   const [tripName, setTripName] = useState("西安华山3日游");
   const [days, setDays] = useState<DayPlan[]>(initialDays);
+  const [feeIncluded, setFeeIncluded] = useState("");
+  const [feeExcluded, setFeeExcluded] = useState("");
   const [exporting, setExporting] = useState(false);
   const [message, setMessage] = useState("");
   const dragRef = useRef<{ dayId: number; itemId: string } | null>(null);
@@ -306,6 +308,50 @@ export default function Home() {
       );
 
       const border = { style: BorderStyle.SINGLE, size: 10, color: "C8B6A4" };
+      const zeroSpacing = { before: 0, after: 0, line: 240 };
+      const feeBodyParagraphs = (text: string) => {
+        const lines = text.trim() ? text.replace(/\r\n/g, "\n").split("\n") : ["暂无说明"];
+        return lines.map(
+          (line) =>
+            new Paragraph({
+              spacing: zeroSpacing,
+              children: [new TextRun({ text: line.length ? line : " " })],
+            }),
+        );
+      };
+      const buildFeeTable = (title: string, text: string) =>
+        new Table({
+          width: { size: 100, type: WidthType.PERCENTAGE },
+          rows: [
+            new TableRow({
+              children: [
+                new TableCell({
+                  width: { size: 100, type: WidthType.PERCENTAGE },
+                  borders: { top: border, bottom: border, left: border, right: border },
+                  shading: { fill: "8B3E2F", type: ShadingType.CLEAR },
+                  margins: { top: 170, bottom: 170, left: 200, right: 200 },
+                  children: [
+                    new Paragraph({
+                      spacing: zeroSpacing,
+                      children: [new TextRun({ text: title, bold: true, size: 27, color: "FFFFFF" })],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            new TableRow({
+              children: [
+                new TableCell({
+                  width: { size: 100, type: WidthType.PERCENTAGE },
+                  borders: { top: border, bottom: border, left: border, right: border },
+                  margins: { top: 140, bottom: 140, left: 200, right: 200 },
+                  children: feeBodyParagraphs(text),
+                }),
+              ],
+            }),
+          ],
+        });
+
       const children: Array<InstanceType<typeof Paragraph> | InstanceType<typeof Table>> = [
         new Paragraph({
           alignment: AlignmentType.CENTER,
@@ -458,12 +504,10 @@ export default function Home() {
               }),
             ],
           }),
-          new Paragraph({
-            spacing: { after: 260 },
-            children: [],
-          }),
         );
       });
+
+      children.push(buildFeeTable("费用包含", feeIncluded), buildFeeTable("费用不含", feeExcluded));
 
       const doc = new Document({
         styles: {
@@ -669,6 +713,27 @@ export default function Home() {
             );
           })}
         </div>
+      </section>
+
+      <section className="fee-section" aria-label="费用说明">
+        <label className="fee-box">
+          <span>费用包含</span>
+          <textarea
+            value={feeIncluded}
+            onChange={(event) => setFeeIncluded(event.target.value)}
+            placeholder="请输入交通、住宿、门票、用餐、导游等包含项目，每行一项"
+            rows={5}
+          />
+        </label>
+        <label className="fee-box">
+          <span>费用不含</span>
+          <textarea
+            value={feeExcluded}
+            onChange={(event) => setFeeExcluded(event.target.value)}
+            placeholder="请输入单房差、个人消费、自费项目等不包含项目，每行一项"
+            rows={5}
+          />
+        </label>
       </section>
 
       <footer className="action-bar">

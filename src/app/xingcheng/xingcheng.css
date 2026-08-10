@@ -25,7 +25,7 @@
   font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif;
 }
 
-.trip-builder button, .trip-builder input, .trip-builder select { font: inherit; }
+.trip-builder button, .trip-builder input, .trip-builder select, .trip-builder textarea { font: inherit; }
 .trip-builder button { cursor: pointer; }
 
 main.trip-builder { min-height: 100vh; padding-bottom: 9rem; }
@@ -196,6 +196,49 @@ main.trip-builder { min-height: 100vh; padding-bottom: 9rem; }
 .trip-builder .photo-options .photo-pending { color: #8e857d; background: #f8f5f1; cursor: default; }
 .trip-builder .photo-options p { margin: 0; color: #9a9189; font-size: 12px; }
 
+.trip-builder .fee-section {
+  width: min(1040px, calc(100% - 72px));
+  margin: 28px auto 0;
+  display: grid;
+  gap: 18px;
+}
+
+.trip-builder .fee-box {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px 22px 22px;
+  background: var(--paper);
+  border: 1.5px solid #c8b6a4;
+  border-radius: 19px;
+  box-shadow: 0 12px 34px rgba(63, 48, 37, .07);
+}
+
+.trip-builder .fee-box > span {
+  color: #6d655e;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.trip-builder .fee-box textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 12px 14px;
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  outline: none;
+  background: #fff;
+  line-height: 1.65;
+  resize: vertical;
+  transition: border-color .18s, box-shadow .18s;
+}
+
+.trip-builder .fee-box textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(158,71,56,.1);
+}
+
 .trip-builder .action-bar {
   position: fixed;
   z-index: 20;
@@ -237,6 +280,7 @@ main.trip-builder { min-height: 100vh; padding-bottom: 9rem; }
   .trip-builder .setup-card { width: calc(100% - 44px); margin-top: -76px; grid-template-columns: 1fr 112px; padding: 18px; gap: 14px; }
   .trip-builder .sample-button { grid-column: 1 / -1; }
   .trip-builder .days-section { width: calc(100% - 24px); margin-top: 52px; }
+  .trip-builder .fee-section { width: calc(100% - 24px); }
   .trip-builder .section-heading { align-items: start; }
   .trip-builder .section-heading p { width: 120px; text-align: right; line-height: 1.5; }
   .trip-builder .day-card { grid-template-columns: 58px 1fr; }
