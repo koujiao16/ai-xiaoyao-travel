@@ -166,6 +166,11 @@ main.trip-builder { min-height: 100vh; padding-bottom: 9rem; }
 .trip-builder .photo-options input { width: 15px; height: 15px; accent-color: var(--green); }
 .trip-builder .photo-options small { color: #a06f53; font-size: 10px; }
 .trip-builder .photo-options .photo-pending { color: #8e857d; background: #f8f5f1; cursor: default; }
+.trip-builder .photo-options .photo-card { width: 168px; padding: 0; flex-direction: column; align-items: stretch; gap: 0; overflow: hidden; }
+.trip-builder .photo-options .photo-card:has(input:checked) { border-color: var(--green); box-shadow: 0 0 0 2px rgba(84,116,94,.18); }
+.trip-builder .photo-card-media { position: relative; display: block; width: 100%; aspect-ratio: 5 / 3; background: #efe8e0; }
+.trip-builder .photo-card-media img { object-fit: cover; }
+.trip-builder .photo-card-meta { display: flex; align-items: center; gap: 7px; min-height: 36px; padding: 0 11px; }
 .trip-builder .photo-options p { margin: 0; color: #9a9189; font-size: 12px; }
 
 .trip-builder .fee-section {
@@ -256,6 +261,7 @@ main.trip-builder { min-height: 100vh; padding-bottom: 9rem; }
   .trip-builder .day-content { padding: 22px 16px 24px; }
   .trip-builder .day-options { grid-template-columns: 1fr; gap: 18px; }
   .trip-builder .photo-picker-title { align-items: flex-start; flex-direction: column; gap: 4px; }
+  .trip-builder .photo-options .photo-card { width: calc(50% - 4px); }
   .trip-builder .meal-options { display: grid; grid-template-columns: repeat(3, 1fr); }
   .trip-builder .meal-options span { min-width: 0; padding: 0 8px; }
   .trip-builder .action-bar { bottom: 10px; padding: 12px; flex-wrap: wrap; gap: 8px; }

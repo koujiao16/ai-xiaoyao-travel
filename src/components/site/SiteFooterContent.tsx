@@ -145,13 +145,19 @@ export function SiteFooterContent({
 
         <div
           className={cn(
-            "text-xs text-ivory-100/42",
+            "flex flex-col gap-2 text-xs text-ivory-100/42 sm:flex-row sm:items-center sm:justify-between",
             integrated
-              ? "mt-6 border-t border-white/[0.06] pt-4 text-center sm:mt-7"
+              ? "mt-6 border-t border-white/[0.06] pt-4 text-center sm:mt-7 sm:text-left"
               : "mt-6 border-t border-white/[0.08] pt-4"
           )}
         >
-          {copyright}
+          <span>{copyright}</span>
+          <Link
+            className="text-ivory-100/55 transition hover:text-ivory-50"
+            href={isZh ? "/zh/image-attributions" : "/image-attributions"}
+          >
+            {isZh ? "图片来源" : "Image credits"}
+          </Link>
         </div>
       </div>
     </footer>
