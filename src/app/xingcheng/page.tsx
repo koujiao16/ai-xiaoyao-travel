@@ -34,6 +34,14 @@ const baseLibrary: LibraryItem[] = [
     kind: "服务",
   },
   {
+    id: "station-pickup",
+    name: "接站",
+    keywords: ["接站", "火车站", "高铁站", "车站", "接"],
+    duration: "",
+    description: "工作人员根据列车抵达时间提前等候，接到客人后乘车前往酒店，协助办理入住并介绍后续行程安排。",
+    kind: "服务",
+  },
+  {
     id: "city-wall",
     name: "西安明城墙",
     keywords: ["城墙", "明城墙", "西安城墙"],
@@ -113,6 +121,14 @@ const baseLibrary: LibraryItem[] = [
     description: "根据返程航班时间合理安排送机，提前从酒店出发前往机场，途中确认行李与行程节点，抵达机场相应航站楼后结束本次接待服务。",
     kind: "服务",
   },
+  {
+    id: "station-dropoff",
+    name: "送站",
+    keywords: ["送站", "火车站", "高铁站", "车站", "送"],
+    duration: "",
+    description: "根据返程列车时间合理安排送站，提前从酒店出发前往火车站或高铁站，抵达后结束本次行程。",
+    kind: "服务",
+  },
 ];
 
 const additionalLibrary: LibraryItem[] = [
@@ -153,7 +169,12 @@ const additionalLibrary: LibraryItem[] = [
   { id: "zaoyuan", name: "枣园革命旧址", keywords: ["枣园", "枣园革命旧址", "延安枣园"], duration: "约1.5小时", description: "枣园革命旧址是延安时期的重要革命旧址，保存有多处窑洞旧居、礼堂和办公场所。园区环境清幽，结合史料说明与现场参观，可了解当时的工作生活场景，以及相关历史事件的背景脉络。", kind: "景点" },
   { id: "yangjialing", name: "杨家岭革命旧址", keywords: ["杨家岭", "杨家岭革命旧址", "延安"], duration: "约1.5小时", description: "杨家岭革命旧址保留中央大礼堂、办公旧址及多处窑洞旧居，是了解延安时期重要会议与革命历程的关键节点。参观可结合展陈文字与旧址空间布局，认识建筑功能及其承载的历史意义。", kind: "景点" },
   { id: "wangjiaping", name: "王家坪革命旧址", keywords: ["王家坪", "王家坪革命旧址", "延安"], duration: "约1小时", description: "王家坪革命旧址曾是延安时期重要军事机关所在地，现保存礼堂、办公旧址与窑洞建筑。游客可通过旧址布局与展陈内容，了解相关军事工作历史，感受黄土高原上的革命旧址风貌。", kind: "景点" },
-  { id: "liangjiahe", name: "梁家河村", keywords: ["梁家河", "梁家河村", "知青旧居"], duration: "约2小时", description: "梁家河村位于延川县黄土高原沟壑区，保留知青旧居、沼气池等参观点，并展示村庄生产生活与乡村发展变迁。游客可走进窑洞与田间场景，了解陕北乡村社会与知青岁月的历史记忆。", kind: "景点" },
+  { id: "yanan-university", name: "延安大学", keywords: ["延安大学", "延大", "大学"], duration: "约1.5小时", description: "延安大学是一所具有深厚红色文化底蕴的综合性大学。校园参访可感受陕北高校的人文氛围，了解学校的发展历程与办学特色。", kind: "景点" },
+  { id: "yanan-revolution-museum", name: "延安革命纪念馆", keywords: ["延安革命纪念馆", "革命纪念馆", "延安纪念馆"], duration: "约2小时", description: "延安革命纪念馆通过文物、图片、历史资料与场景展示，系统呈现延安时期的革命历程，是了解延安精神和相关历史的重要场所。", kind: "景点" },
+  { id: "return-to-yanan", name: "《再回延安》", keywords: ["再回延安", "演出", "延安演出"], duration: "约1小时", description: "《再回延安》以红色历史与延安记忆为主题，通过沉浸式场景、舞台表演和多媒体艺术串联感人故事，让观众在行进式体验中感受延安精神。", kind: "景点" },
+  { id: "baota-mountain", name: "宝塔山", keywords: ["宝塔山", "延安宝塔山", "宝塔"], duration: "约1.5小时", description: "宝塔山是延安的标志性景观，山上的宝塔见证了古城历史，也承载着深厚的红色文化记忆。登临景区可俯瞰延安城市风貌。", kind: "景点" },
+  { id: "nanniwan", name: "南泥湾", keywords: ["南泥湾", "延安南泥湾", "大生产运动"], duration: "约2小时", description: "南泥湾以大生产运动历史闻名，现有相关旧址、纪念设施与田园景观。游览可了解艰苦奋斗、自力更生的历史故事与精神内涵。", kind: "景点" },
+  { id: "liangjiahe", name: "梁家河", keywords: ["梁家河", "知青旧居"], duration: "约2小时", description: "梁家河位于延川县黄土高原沟壑区，保留知青旧居、沼气池等参观内容，并展示当地生产生活与乡村发展变迁。", kind: "景点" },
   { id: "nwpu", name: "西北工业大学", keywords: ["西北工业大学", "西工大", "大学"], duration: "约1.5小时", description: "西北工业大学是一所以航空、航天、航海等领域见长的高等学府，校园内科研楼宇与绿化环境相映。参访可感受理工科大学学术氛围，了解学校发展历程、学科特色及科技人才培养方向。", kind: "景点" },
   { id: "xjtu", name: "西安交通大学", keywords: ["西安交通大学", "西交大", "大学"], duration: "约1.5小时", description: "西安交通大学是历史悠久的综合性研究型大学，校园兼具人文底蕴与现代学术氛围。参观可了解学校西迁历史、办学传统与校园文化景观，感受高等教育发展与城市文脉之间的紧密联系。", kind: "景点" },
 ];
