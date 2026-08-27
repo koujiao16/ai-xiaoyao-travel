@@ -15,7 +15,11 @@ type LibraryItem = {
   description: string;
   kind: "景点" | "服务";
   image?: string;
+  region?: string;
+  seasonal?: "春季限定";
 };
+
+const routeName = (item: LibraryItem) => (item.seasonal ? `${item.name}（${item.seasonal}）` : item.name);
 
 type DayPlan = {
   id: number;
@@ -186,6 +190,53 @@ const additionalLibrary: LibraryItem[] = [
   { id: "liangjiahe", name: "梁家河", keywords: ["梁家河", "知青旧居"], duration: "约2小时", description: "梁家河位于延川县文安驿镇，是黄土高原沟壑区的陕北村落。参观内容包括知青旧居、村史展陈、沼气池和生产生活遗迹，通过实物与口述资料呈现当地自然条件、知青劳动生活及村庄发展变化，可从基层视角了解陕北乡村社会与时代变迁。", kind: "景点" },
   { id: "nwpu", name: "西北工业大学", keywords: ["西北工业大学", "西工大", "大学"], duration: "约1.5小时", description: "西北工业大学是一所以航空、航天、航海等领域人才培养和科学研究见长的高校。校园参访可结合校史、科技成果和航空航天主题展示，了解学校在国防科技、工程教育及重大装备研发方面的发展，感受严谨务实的大学文化与创新氛围。", kind: "景点" },
   { id: "xjtu", name: "西安交通大学", keywords: ["西安交通大学", "西交大", "大学"], duration: "约1.5小时", description: "西安交通大学前身可追溯至1896年创办的南洋公学，20世纪50年代主体由上海迁至西安。校园参访可了解“西迁”历史、工程与医学等学科发展及代表性科研成果，在历史建筑、校史展陈和现代校园中感受大学精神与古都文脉的交融。", kind: "景点" },
+];
+
+const ankangLibrary: LibraryItem[] = [
+  { id: "yinghu-lake", name: "瀛湖风景区", region: "安康", keywords: ["瀛湖", "瀛湖风景区", "安康瀛湖", "安康"], duration: "约2.5小时", description: "瀛湖位于安康市区西南，是西北地区重要的人工淡水湖景观，以碧水、岛屿和秦巴山色相映成趣。可乘船穿行湖区，欣赏湖湾、岛屿与两岸青山，适合休闲观光和水上游览。", kind: "景点" },
+  { id: "nangong-mountain", name: "南宫山国家森林公园", region: "安康", keywords: ["南宫山", "南宫山国家森林公园", "岚皋", "安康"], duration: "约4小时", description: "南宫山位于岚皋县巴山深处，以古冰川遗迹、火山岩地貌、原始森林和云海景观闻名。景区山体雄奇、空气清新，兼具自然观光、登山吸氧与夏季避暑体验。", kind: "景点" },
+  { id: "shiquan-ancient-city", name: "石泉古城", region: "安康", keywords: ["石泉古城", "石泉", "汉江", "安康"], duration: "约1.5小时", description: "石泉古城依汉江而建，保存有较完整的明清街巷与传统民居。古城生活气息浓厚，可漫步老街、感受汉江文化，体会陕南山水间的慢生活。", kind: "景点" },
+  { id: "houliu-ancient-town", name: "后柳古镇", region: "安康", keywords: ["后柳古镇", "后柳", "汉江", "安康"], duration: "约1.5小时", description: "后柳古镇依汉江而建，因水运而兴，保留着陕南古镇的街巷格局与滨江风貌。漫步古镇，可感受汉江航运留下的历史记忆和悠闲质朴的生活气息。", kind: "景点" },
+  { id: "fengyan-terraces", name: "凤堰古梯田", region: "安康", keywords: ["凤堰古梯田", "凤堰梯田", "汉阴", "安康"], duration: "约2小时", description: "凤堰古梯田位于汉阴县，是秦巴山区规模较大、保存较完整的清代梯田群。层层梯田随山势铺展，春季油菜花盛开、秋季稻浪金黄，是欣赏田园风光和了解陕南移民农耕文化的好去处。", kind: "景点" },
+  { id: "shuhe-ancient-town", name: "蜀河古镇", region: "安康", keywords: ["蜀河古镇", "蜀河", "旬阳", "安康"], duration: "约1.5小时", description: "蜀河古镇位于旬阳，曾是汉江上游重要的水运码头和商贸集散地，有“小汉口”之称。镇内保留古街、会馆、码头遗迹等历史风貌，展现了汉江航运文化的繁盛记忆。", kind: "景点" },
+  { id: "yanxiang-cave", name: "燕翔洞", region: "安康", keywords: ["燕翔洞", "石泉燕翔洞", "溶洞", "安康"], duration: "约1.5小时", description: "燕翔洞位于石泉县，是以喀斯特溶洞景观为特色的自然景区。洞内钟乳石、石笋、石幔等形态丰富，洞外山水清秀，适合体验地下奇观与陕南山水风光。", kind: "景点" },
+  { id: "xiangxi-cave", name: "香溪洞", region: "安康", keywords: ["香溪洞", "安康香溪洞", "安康"], duration: "约1.5小时", description: "香溪洞位于安康城区附近，是集道教文化、山林景观与休闲游览于一体的传统名胜。景区溪流清幽、林木繁茂，传说与吕洞宾修炼会仙相关，是安康市民休闲登高的常去之地。", kind: "景点" },
+  { id: "xunyang-yu-cave", name: "旬阳禹穴", region: "安康", keywords: ["旬阳禹穴", "禹穴", "旬阳", "安康"], duration: "约1小时", description: "旬阳禹穴位于旬阳市关口镇，相传与大禹治水有关。景区以摩崖石刻、大禹塑像及汉水流域传说为特色，是了解当地历史传说与人文景观的特色去处。", kind: "景点" },
+];
+
+const hanzhongLibrary: LibraryItem[] = [
+  { id: "hanzhong-museum", name: "汉中市博物馆（古汉台）", region: "汉中", keywords: ["汉中市博物馆", "古汉台", "汉台", "汉中博物馆", "汉中"], duration: "约1.5小时", description: "汉中市博物馆设于古汉台，相传为刘邦驻汉中时期的行宫遗址。馆内收藏汉中历史文物与石门十三品等珍贵摩崖石刻，是了解汉文化、栈道文化和汉中历史的重要窗口。", kind: "景点" },
+  { id: "baijiang-altar", name: "拜将坛", region: "汉中", keywords: ["拜将坛", "汉中拜将坛", "韩信", "汉中"], duration: "约40分钟", description: "拜将坛相传为刘邦拜韩信为大将之处，与古汉台并列为汉中重要的汉文化遗址。景区以坛台遗迹和历史典故为核心，承载着“汉家发祥地”的历史记忆。", kind: "景点" },
+  { id: "xinghan-scenic-area", name: "兴汉胜境", region: "汉中", keywords: ["兴汉胜境", "汉中兴汉胜境", "汉中"], duration: "约2.5小时", description: "兴汉胜境是以汉文化为主题的大型文化旅游景区，拥有汉风建筑群、园林景观和沉浸式文化演艺。适合集中体验两汉文化、建筑美学与夜游演出。", kind: "景点" },
+  { id: "wuhou-tomb", name: "武侯墓", region: "汉中", keywords: ["武侯墓", "诸葛亮墓", "勉县武侯墓", "汉中"], duration: "约1.5小时", description: "武侯墓位于勉县，是三国时期蜀汉丞相诸葛亮的长眠之地。景区古柏参天、环境清幽，兼具三国文化、古墓遗址与园林景观特色。", kind: "景点" },
+  { id: "mianxian-wuhou-temple", name: "勉县武侯祠", region: "汉中", keywords: ["勉县武侯祠", "武侯祠", "汉中武侯祠", "汉中"], duration: "约1.5小时", description: "勉县武侯祠为纪念诸葛亮而建，是汉中地区重要的三国文化遗址。祠内碑刻、匾额与古建筑保存丰富，可系统了解诸葛亮生平及蜀汉历史。", kind: "景点" },
+  { id: "shimen-plank-road", name: "石门栈道", region: "汉中", keywords: ["石门栈道", "褒斜栈道", "汉中栈道", "汉中"], duration: "约2小时", description: "石门栈道位于褒河峡谷，是古代蜀道文化的重要代表，与“明修栈道，暗度陈仓”的历史典故密切相关。沿线山峦夹江、崖壁险峻，兼具自然峡谷风光与古道历史感。", kind: "景点" },
+  { id: "longtou-mountain", name: "龙头山景区", region: "汉中", keywords: ["龙头山", "龙头山景区", "汉中龙头山", "汉中"], duration: "约3小时", description: "龙头山以高山云海、四季景观和便捷登山体验受到游客欢迎。可通过索道、步道等方式登临山顶，欣赏秦巴山地的云海、日出、秋色与冬季雪景。", kind: "景点" },
+  { id: "liping-forest-park", name: "黎坪国家森林公园", region: "汉中", keywords: ["黎坪", "黎坪国家森林公园", "汉中黎坪", "汉中"], duration: "约4小时", description: "黎坪国家森林公园拥有原始森林、峡谷溪流、瀑布群和奇特岩层景观。景区生态环境优良，适合徒步观瀑、森林吸氧和夏季避暑。", kind: "景点" },
+  { id: "qingmuchuan-ancient-town", name: "青木川古镇", region: "汉中", keywords: ["青木川", "青木川古镇", "宁强", "汉中"], duration: "约2小时", description: "青木川古镇位于宁强县陕甘川交界处，保留了较完整的传统街巷、民居和商号建筑。这里兼具边地商贸历史与多元民俗风情，适合慢游古镇、感受山地人文。", kind: "景点" },
+  { id: "foping-panda-valley", name: "佛坪熊猫谷", region: "汉中", keywords: ["佛坪熊猫谷", "熊猫谷", "佛坪", "汉中"], duration: "约2.5小时", description: "佛坪熊猫谷位于秦岭南麓，是亲近秦岭生态和了解大熊猫栖息环境的特色景区。除大熊猫相关科普外，还可观赏金丝猴、羚牛等秦岭野生动物及森林溪谷景观。", kind: "景点" },
+  { id: "tianhan-wetland-park", name: "天汉湿地公园", region: "汉中", keywords: ["天汉湿地公园", "天汉湿地", "汉江湿地", "汉中"], duration: "约1小时", description: "天汉湿地公园沿汉江而建，是汉中城区休闲观景的重要滨水空间。傍晚可漫步江畔，欣赏一江两岸的城市风光、湿地景观与慢生活氛围。", kind: "景点" },
+  { id: "hanzhong-rapeseed-flowers", name: "汉中油菜花海", region: "汉中", keywords: ["汉中油菜花海", "油菜花", "汉中油菜花", "春季限定", "汉中"], duration: "约2小时", description: "汉中油菜花海为春季限定景观。每年三至四月，汉中盆地与丘陵田野连片金黄，适合踏青、摄影和乡村观光；具体花期以当年气候和官方信息为准。", kind: "景点", seasonal: "春季限定" },
+  { id: "foping-nature-reserve", name: "佛坪国家级自然保护区", region: "汉中", keywords: ["佛坪国家级自然保护区", "佛坪自然保护区", "佛坪保护区", "佛坪", "汉中"], duration: "约3小时", description: "佛坪国家级自然保护区是秦岭大熊猫及多种珍稀野生动物的重要栖息地，以完整森林生态系统和生物多样性著称。应以生态科普、保护教育和规范游览为主。", kind: "景点" },
+];
+
+const shangluoLibrary: LibraryItem[] = [
+  { id: "niubeiliang-forest-park", name: "牛背梁国家森林公园", region: "商洛", keywords: ["牛背梁", "牛背梁国家森林公园", "商洛牛背梁", "商洛"], duration: "约4小时", description: "牛背梁国家森林公园以秦岭主脊、高山峡谷、原始森林和羚牛谷景观著称。这里生态保存良好，是体验秦岭山地风光、森林徒步与避暑休闲的代表性目的地。", kind: "景点" },
+  { id: "zhashui-karst-cave", name: "柞水溶洞国家地质公园", region: "商洛", keywords: ["柞水溶洞", "柞水溶洞国家地质公园", "柞水", "商洛"], duration: "约2小时", description: "柞水溶洞国家地质公园以典型喀斯特溶洞群为核心，洞内钟乳石、石笋和地下空间景观丰富。适合开展地质科普、亲子游览与夏季清凉体验。", kind: "景点" },
+  { id: "muwang-forest-park", name: "木王国家森林公园", region: "商洛", keywords: ["木王", "木王国家森林公园", "镇安", "商洛"], duration: "约4小时", description: "木王国家森林公园拥有大面积森林、峡谷溪流和高山草甸，以杜鹃花海和秦岭生态景观闻名。景区四季景色鲜明，适合徒步观景、森林吸氧与避暑。", kind: "景点" },
+];
+
+const qinlingAroundLibrary: LibraryItem[] = [
+  { id: "heihe-forest-park", name: "黑河国家森林公园", region: "西安周边", keywords: ["黑河国家森林公园", "黑河森林公园", "周至黑河", "周至", "西安周边"], duration: "约3小时", description: "黑河国家森林公园位于周至县秦岭北麓，森林茂密、溪流清澈，是西安重要水源保护区域周边的生态景观地。适合森林漫步、避暑休闲和自然观察。", kind: "景点" },
+  { id: "louguantai-forest-park", name: "楼观台国家森林公园", region: "西安周边", keywords: ["楼观台", "楼观台国家森林公园", "古楼观", "周至", "西安周边"], duration: "约2.5小时", description: "楼观台国家森林公园位于周至县，兼具秦岭自然风光与道教文化底蕴。相传老子曾在此讲经，适合结合古楼观、道文化遗迹和山林景观安排一日游览。", kind: "景点" },
+  { id: "qinling-national-botanical-garden", name: "秦岭国家植物园", region: "西安周边", keywords: ["秦岭国家植物园", "秦岭植物园", "周至", "西安周边"], duration: "约3小时", description: "秦岭国家植物园集植物保育、科学研究、自然教育与生态观光于一体。园区适合亲子研学和自然科普，可近距离了解秦岭植物多样性及珍稀动植物保护知识。", kind: "景点" },
+  { id: "taibai-mountain", name: "太白山国家森林公园", region: "宝鸡", keywords: ["太白山", "太白山国家森林公园", "眉县太白山", "宝鸡"], duration: "约5小时", description: "太白山国家森林公园位于秦岭主峰区域，以高海拔垂直植被带、冰斗湖泊、峡谷溪流和高山气候景观著称。登山路线较长，适合有体力基础的自然与户外爱好者。", kind: "景点" },
+  { id: "cuihua-mountain", name: "翠华山", region: "西安", keywords: ["翠华山", "翠华山国家地质公园", "终南山", "西安"], duration: "约3小时", description: "翠华山以山崩地貌、天池和秦岭森林景观闻名，是西安近郊热门的避暑与地质科普目的地。可观赏崩塌巨石、山间湖泊和峡谷林地。", kind: "景点" },
+  { id: "taiping-forest-park", name: "太平国家森林公园", region: "西安", keywords: ["太平国家森林公园", "太平森林公园", "户县太平", "鄠邑", "西安"], duration: "约3小时", description: "太平国家森林公园以峡谷瀑布群和山林景观为特色，步道沿溪谷延伸，适合夏季避暑、亲子徒步和观瀑休闲。", kind: "景点" },
+  { id: "nanwutai-mountain", name: "南五台", region: "西安", keywords: ["南五台", "终南山南五台", "西安南五台", "西安"], duration: "约3小时", description: "南五台位于终南山北麓，以五峰连绵、佛教遗迹和登高视野著称。天气晴好时可远眺关中平原与长安城区，适合登山、祈福和观赏云海。", kind: "景点" },
+  { id: "zhuque-forest-park", name: "朱雀国家森林公园", region: "西安", keywords: ["朱雀国家森林公园", "朱雀森林公园", "户县朱雀", "鄠邑", "西安"], duration: "约4小时", description: "朱雀国家森林公园拥有高山草甸、森林峡谷和冰晶顶等秦岭高海拔景观。适合有一定户外基础的游客进行登山徒步、避暑与自然观景。", kind: "景点" },
+  { id: "wangshun-mountain", name: "王顺山", region: "西安周边", keywords: ["王顺山", "蓝田王顺山", "蓝田", "西安周边"], duration: "约3小时", description: "王顺山以孝文化传说、山林溪谷和自然生态景观闻名。景区植被茂密、溪水潺潺，适合轻徒步、休闲避暑和体验秦岭山地风光。", kind: "景点" },
+  { id: "jinlong-gorge", name: "金龙峡", region: "西安周边", keywords: ["金龙峡", "蓝田金龙峡", "蓝田", "西安周边"], duration: "约2.5小时", description: "金龙峡以幽深峡谷、清溪深潭和多级瀑布为主要特色。夏季气候清凉，适合亲水游览、避暑休闲和轻量级峡谷徒步。", kind: "景点" },
 ];
 
 const henanLibrary: LibraryItem[] = [
@@ -411,9 +462,9 @@ const henanLibrary: LibraryItem[] = [
   },
 ];
 
-const library: LibraryItem[] = [...baseLibrary, ...additionalLibrary, ...henanLibrary];
+const library: LibraryItem[] = [...baseLibrary, ...additionalLibrary, ...ankangLibrary, ...hanzhongLibrary, ...shangluoLibrary, ...qinlingAroundLibrary, ...henanLibrary];
 
-const lodgingOptions = ["西安", "华山", "临潼", "延安", "壶口", "郑州", "洛阳", "三门峡", "开封", "登封", "不住宿"] as const;
+const lodgingOptions = ["西安", "华山", "临潼", "延安", "壶口", "汉中", "安康", "商洛", "宝鸡", "郑州", "洛阳", "三门峡", "开封", "登封", "不住宿"] as const;
 
 const initialDays: DayPlan[] = [
   { id: 1, items: ["pickup"], query: "", touched: false, meals: [], lodging: "西安", photoItems: [] },
@@ -654,7 +705,7 @@ export default function Home() {
           }),
           ...days.map((day) => {
             const selected = day.items.map((id) => itemById[id]);
-            const route = selected.map((item) => item.name).join(" → ") || "待安排";
+            const route = selected.map((item) => routeName(item)).join(" → ") || "待安排";
             const meals = day.meals.length ? day.meals.join("、") : "不含餐";
             return new TableRow({
               children: [
@@ -724,6 +775,9 @@ export default function Home() {
         const narrativeRuns: InstanceType<typeof TextRun>[] = [];
         selected.forEach((item, index) => {
           narrativeRuns.push(new TextRun({ text: `【${item.name}】`, bold: true, color: "8B3E2F" }));
+          if (item.seasonal) {
+            narrativeRuns.push(new TextRun({ text: `（${item.seasonal}）`, bold: true, color: "54745E" }));
+          }
           if (item.duration) {
             narrativeRuns.push(new TextRun({ text: `（游览${item.duration}）`, bold: true, color: "37322E" }));
           }
@@ -969,7 +1023,7 @@ export default function Home() {
                 <div className="day-content">
                   <div className="route-preview">
                     {day.items.length
-                      ? day.items.map((id) => itemById[id].name).join("  →  ")
+                      ? day.items.map((id) => routeName(itemById[id])).join("  →  ")
                       : "这一天还没有添加安排"}
                   </div>
 
@@ -987,6 +1041,7 @@ export default function Home() {
                         >
                           <i aria-hidden="true">⋮⋮</i>
                           {itemById[id].name}
+                          {itemById[id].seasonal ? <small className="seasonal-tag">{itemById[id].seasonal}</small> : null}
                           <button type="button" aria-label={`删除${itemById[id].name}`} onClick={() => removeItem(day, id)}>×</button>
                         </span>
                       ))}
@@ -1009,7 +1064,11 @@ export default function Home() {
                             onMouseDown={(event) => event.preventDefault()}
                             onClick={() => addItem(day, item.id)}
                           >
-                            <span>{item.name}<small>{item.kind}</small></span>
+                            <span>
+                              {item.name}
+                              <small>{item.kind}</small>
+                              {item.seasonal ? <small className="seasonal-tag">{item.seasonal}</small> : null}
+                            </span>
                             {item.duration && <em>{item.duration}</em>}
                           </button>
                         )) : <p>没有找到匹配项目</p>}
@@ -1079,6 +1138,7 @@ export default function Home() {
                                     onChange={() => togglePhoto(day, id)}
                                   />
                                   <span>{item.name}</span>
+                                  {item.seasonal ? <small className="seasonal-tag">{item.seasonal}</small> : null}
                                   {!ready && <small>图片待补</small>}
                                 </span>
                               </label>

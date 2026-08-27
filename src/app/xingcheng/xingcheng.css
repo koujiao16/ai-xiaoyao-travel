@@ -140,6 +140,10 @@ main.trip-builder { min-height: 100vh; padding-bottom: 9rem; }
 .trip-builder .suggestions button:hover { background: #f8f1ea; }
 .trip-builder .suggestions span { font-weight: 650; }
 .trip-builder .suggestions small { margin-left: 9px; padding: 2px 6px; border-radius: 5px; color: var(--accent); background: var(--accent-soft); font-size: 10px; font-weight: 500; }
+.trip-builder .seasonal-tag { color: #54745e !important; background: #e7efe6 !important; font-size: 10px; font-weight: 650; }
+.trip-builder .item-chip .seasonal-tag { margin-left: 0; padding: 2px 6px; border-radius: 5px; line-height: 1.2; }
+.trip-builder .photo-card-meta .seasonal-tag,
+.trip-builder .photo-pending .seasonal-tag { padding: 2px 6px; border-radius: 5px; }
 .trip-builder .suggestions em { color: var(--muted); font-size: 12px; font-style: normal; }
 .trip-builder .suggestions p { margin: 10px; color: var(--muted); font-size: 13px; }
 
