@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   },
   description:
     "China B2B destination management & travel operations across Shaanxi, Heilongjiang, Henan and Jilin.",
-  icons: [{ rel: "icon", url: "/favicon.svg" }],
+  icons: [{ rel: "icon", url: "/favicon-blue-logo.png", type: "image/png", sizes: "436x436" }],
 };
 
 export default function RootLayout({
