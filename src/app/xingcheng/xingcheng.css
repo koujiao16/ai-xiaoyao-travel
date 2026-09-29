@@ -54,8 +54,48 @@ main.trip-builder { min-height: 100vh; padding-bottom: 9rem; }
 
 .trip-builder .topbar > div:nth-child(2) { display: flex; flex-direction: column; line-height: 1.2; }
 .trip-builder .topbar strong { font-size: 16px; letter-spacing: 0.05em; }
-.trip-builder .topbar span { color: var(--muted); font-size: 11px; margin-top: 5px; }
-.trip-builder .library-count { margin-left: auto; color: var(--muted); font-size: 13px; padding: 8px 13px; border: 1px solid var(--line); border-radius: 999px; background: rgba(255,255,255,.52); }
+.trip-builder .topbar > div:nth-child(2) > span { color: var(--muted); font-size: 11px; margin-top: 5px; }
+.trip-builder .topbar-end {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.trip-builder .library-count {
+  color: var(--muted);
+  font-size: 13px;
+  padding: 8px 13px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255,255,255,.52);
+}
+.trip-builder .admin-entry {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 13px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--accent-deep);
+  background: rgba(255,255,255,.72);
+  font-size: 13px;
+  font-weight: 650;
+  text-decoration: none;
+  transition: background .18s, border-color .18s, color .18s;
+}
+.trip-builder .admin-entry:hover {
+  border-color: rgba(158, 71, 56, 0.35);
+  background: var(--accent-soft);
+  color: var(--accent-deep);
+}
+.trip-builder .admin-entry-icon {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+.trip-builder .admin-entry-label-short { display: none; }
 
 .trip-builder .setup-card {
   width: min(1040px, calc(100% - 72px));
@@ -253,6 +293,13 @@ main.trip-builder { min-height: 100vh; padding-bottom: 9rem; }
   main.trip-builder { padding-bottom: 11rem; }
   .trip-builder .topbar { width: calc(100% - 24px); height: 68px; }
   .trip-builder .library-count { display: none; }
+  .trip-builder .admin-entry {
+    height: 34px;
+    padding: 0 10px;
+    gap: 5px;
+  }
+  .trip-builder .admin-entry-label-full { display: none; }
+  .trip-builder .admin-entry-label-short { display: inline; }
   .trip-builder .setup-card { width: calc(100% - 24px); margin: 16px auto 0; grid-template-columns: 1fr 112px; padding: 18px; gap: 14px; }
   .trip-builder .sample-button { grid-column: 1 / -1; }
   .trip-builder .days-section { width: calc(100% - 24px); margin-top: 36px; }

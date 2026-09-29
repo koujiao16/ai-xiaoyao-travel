@@ -3,6 +3,7 @@
 import "./xingcheng.css";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useMemo, useRef, useState } from "react";
 import type { LibraryItem } from "@/lib/xingcheng/types";
 import { routeName } from "@/data/xingcheng/library";
@@ -542,7 +543,28 @@ export function XingchengBuilder({ library, lodgingOptions, dataSource = "local"
           <strong>行程生成器</strong>
           <span>简单选择，快速成稿</span>
         </div>
-        <div className="library-count">景点资料库 · {safeLibrary.length} 项{dataSource === "local" ? "（本地）" : ""}</div>
+        <div className="topbar-end">
+          <div className="library-count">景点资料库 · {safeLibrary.length} 项{dataSource === "local" ? "（本地）" : ""}</div>
+          <Link href="/admin" className="admin-entry" aria-label="管理后台">
+            <svg className="admin-entry-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path
+                d="M12 3.5 5.5 6.2v5.1c0 4.1 2.7 7.8 6.5 9.2 3.8-1.4 6.5-5.1 6.5-9.2V6.2L12 3.5Z"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M9.2 12.1 11 13.9l3.8-3.8"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            <span className="admin-entry-label-full">管理后台</span>
+            <span className="admin-entry-label-short">后台</span>
+          </Link>
+        </div>
       </header>
 
       <section className="setup-card" aria-label="行程基本信息">
