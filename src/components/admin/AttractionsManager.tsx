@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { AttractionRecord } from "@/lib/xingcheng/types";
 import { createClient } from "@/lib/supabase/client";
-import { logAdminActivity } from "@/lib/admin/media";
+import { deleteEntityMediaFolder, formatUnknownError, logAdminActivity } from "@/lib/admin/media";
 import { EmptyState } from "@/components/admin/AdminUI";
 
 export function AttractionsManager({ initial }: { initial: AttractionRecord[] }) {
@@ -52,6 +52,7 @@ export function AttractionsManager({ initial }: { initial: AttractionRecord[] })
     setBusyId(item.id);
     try {
       const supabase = createClient();
+      await deleteEntityMediaFolder("attractions", item.id, item.image_url);
       const { error } = await supabase.from("attractions").delete().eq("id", item.id);
       if (error) throw error;
       setItems((current) => current.filter((row) => row.id !== item.id));
@@ -63,7 +64,7 @@ export function AttractionsManager({ initial }: { initial: AttractionRecord[] })
       });
       router.refresh();
     } catch (err) {
-      setMessage(err instanceof Error ? err.message : "删除失败");
+      setMessage(formatUnknownError(err, "删除失败"));
     } finally {
       setBusyId(null);
     }

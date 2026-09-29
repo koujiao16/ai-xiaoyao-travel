@@ -2,16 +2,13 @@
  * Seed Supabase with local attraction / accommodation fallback data.
  *
  * Prerequisites:
- * 1. Create Supabase project and run supabase/migrations/001_init.sql
- * 2. Create Storage bucket `media` (SQL migration also creates it)
- * 3. Add to .env.local:
- *    NEXT_PUBLIC_SUPABASE_URL=...
- *    NEXT_PUBLIC_SUPABASE_ANON_KEY=...
- *    SUPABASE_SERVICE_ROLE_KEY=...   (required for seed upserts)
- * 4. Insert your admin email into admin_email_allowlist, then create Auth user
+ * 1. Run supabase/INIT_ALL.sql in SQL Editor
+ * 2. .env.local with:
+ *    NEXT_PUBLIC_SUPABASE_URL
+ *    NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+ *    SUPABASE_SECRET_KEY
  *
- * Usage:
- *   npm run seed:supabase
+ * Usage: npm run seed:supabase
  */
 
 import { createClient } from "@supabase/supabase-js";
@@ -22,20 +19,28 @@ import { readFileSync, existsSync } from "node:fs";
 config({ path: resolve(process.cwd(), ".env.local") });
 config({ path: resolve(process.cwd(), ".env") });
 
-const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
+const secretKey = process.env.SUPABASE_SECRET_KEY?.trim();
 
-if (!url || !serviceKey) {
-  console.error("Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in .env.local");
+if (!url || !secretKey) {
+  console.error(
+    "Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SECRET_KEY in .env.local (new API keys only).",
+  );
   process.exit(1);
 }
 
-const supabase = createClient(url, serviceKey, {
+if (secretKey.startsWith("eyJ")) {
+  console.error(
+    "Refusing Legacy JWT service_role key. Use the new Secret key (sb_secret_…).",
+  );
+  process.exit(1);
+}
+
+const supabase = createClient(url, secretKey, {
   auth: { persistSession: false, autoRefreshToken: false },
 });
 
 async function loadMappers() {
-  // Dynamic import of compiled TS via tsx
   const { fallbackAttractionRecords } = await import("../src/lib/xingcheng/mappers");
   const { fallbackAccommodations } = await import("../src/data/xingcheng/accommodations");
   return { fallbackAttractionRecords, fallbackAccommodations };
@@ -49,7 +54,8 @@ async function uploadLocalImageIfNeeded(imageUrl: string | null, slug: string) {
   const buffer = readFileSync(filePath);
   const ext = filePath.split(".").pop() || "webp";
   const storagePath = `attractions/seed-${slug}.${ext}`;
-  const contentType = ext === "png" ? "image/png" : ext === "jpg" || ext === "jpeg" ? "image/jpeg" : "image/webp";
+  const contentType =
+    ext === "png" ? "image/png" : ext === "jpg" || ext === "jpeg" ? "image/jpeg" : "image/webp";
 
   const { error } = await supabase.storage.from("media").upload(storagePath, buffer, {
     upsert: true,
@@ -118,15 +124,16 @@ async function main() {
   if (lodgingError) throw lodgingError;
   console.log("Accommodations upserted.");
 
-  // Sample itinerary template: 西安华山3日游
-  const { data: attractions } = await supabase.from("attractions").select("id, slug").in("slug", [
-    "pickup",
-    "city-wall",
-    "huashan",
-    "dropoff",
-  ]);
+  const { data: attractions } = await supabase
+    .from("attractions")
+    .select("id, slug")
+    .in("slug", ["pickup", "city-wall", "huashan", "dropoff"]);
   const bySlug = Object.fromEntries((attractions || []).map((a) => [a.slug, a.id]));
-  const { data: lodging } = await supabase.from("accommodations").select("id, slug").eq("slug", "city-西安").maybeSingle();
+  const { data: lodging } = await supabase
+    .from("accommodations")
+    .select("id, slug")
+    .eq("slug", "city-西安")
+    .maybeSingle();
 
   const { data: itinerary, error: itinError } = await supabase
     .from("itineraries")
@@ -151,7 +158,14 @@ async function main() {
   await supabase.from("itinerary_days").delete().eq("itinerary_id", itinerary.id);
 
   const dayDefs = [
-    { day_number: 1, title: "第1天", items: ["pickup"], lodging: lodging?.id || null, lodging_label: "西安", breakfast: false },
+    {
+      day_number: 1,
+      title: "第1天",
+      items: ["pickup"],
+      lodging: lodging?.id || null,
+      lodging_label: "西安",
+      breakfast: false,
+    },
     {
       day_number: 2,
       title: "第2天",
@@ -160,7 +174,14 @@ async function main() {
       lodging_label: "西安",
       breakfast: true,
     },
-    { day_number: 3, title: "第3天", items: ["dropoff"], lodging: null, lodging_label: "不住宿", breakfast: true },
+    {
+      day_number: 3,
+      title: "第3天",
+      items: ["dropoff"],
+      lodging: null,
+      lodging_label: "不住宿",
+      breakfast: true,
+    },
   ];
 
   for (const day of dayDefs) {
@@ -183,13 +204,16 @@ async function main() {
     if (dayError) throw dayError;
 
     const attrs = day.items
-      .map((slug, index) => bySlug[slug] && ({
-        itinerary_day_id: dayRow.id,
-        attraction_id: bySlug[slug],
-        show_photo: ["city-wall", "huashan"].includes(slug),
-        sort_order: index,
-        published: true,
-      }))
+      .map(
+        (slug, index) =>
+          bySlug[slug] && {
+            itinerary_day_id: dayRow.id,
+            attraction_id: bySlug[slug],
+            show_photo: ["city-wall", "huashan"].includes(slug),
+            sort_order: index,
+            published: true,
+          },
+      )
       .filter(Boolean);
     if (attrs.length) {
       const { error: attrError } = await supabase.from("itinerary_day_attractions").insert(attrs);
@@ -197,11 +221,11 @@ async function main() {
     }
   }
 
-  console.log("Sample itinerary seeded: 西安华山3日游");
+  console.log("Sample itinerary seeded.");
   console.log("Done.");
 }
 
 main().catch((error) => {
-  console.error(error);
+  console.error(error instanceof Error ? error.message : error);
   process.exit(1);
 });

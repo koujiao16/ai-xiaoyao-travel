@@ -26,7 +26,9 @@ Then open `http://localhost:3000`.
 
 ## Admin CMS
 
-See [ADMIN_SETUP.md](./ADMIN_SETUP.md) for Supabase schema, Storage, admin whitelist, env vars, and seed script (`npm run seed:supabase`).
+See [ADMIN_SETUP.md](./ADMIN_SETUP.md). Use new Supabase API keys only:
+`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, and local `SUPABASE_SECRET_KEY`.
+Run `supabase/INIT_ALL.sql` once in the SQL Editor, then `npm run seed:supabase` / `npm run bootstrap:admin`.
 
 ## Assets
 

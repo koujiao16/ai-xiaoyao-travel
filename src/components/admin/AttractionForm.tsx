@@ -1,11 +1,17 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ATTRACTION_CATEGORIES } from "@/lib/xingcheng/mappers";
 import type { AttractionRecord } from "@/lib/xingcheng/types";
 import { createClient } from "@/lib/supabase/client";
-import { deleteMediaByUrl, logAdminActivity, slugify, uploadMediaFile } from "@/lib/admin/media";
+import {
+  deleteMediaByUrl,
+  formatUnknownError,
+  logAdminActivity,
+  slugify,
+  uploadMediaFile,
+} from "@/lib/admin/media";
 
 type FormState = {
   name: string;
@@ -52,11 +58,18 @@ function toForm(record?: Partial<AttractionRecord> | null): FormState {
 export function AttractionForm({ initial }: { initial?: AttractionRecord | null }) {
   const router = useRouter();
   const [form, setForm] = useState(() => toForm(initial));
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [pendingPreview, setPendingPreview] = useState("");
   const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
   const [previewBroken, setPreviewBroken] = useState(false);
   const isEdit = Boolean(initial?.id);
+
+  useEffect(() => {
+    return () => {
+      if (pendingPreview) URL.revokeObjectURL(pendingPreview);
+    };
+  }, [pendingPreview]);
 
   const setField = <K extends keyof FormState>(key: K, value: FormState[K]) => {
     setForm((current) => {
@@ -68,7 +81,9 @@ export function AttractionForm({ initial }: { initial?: AttractionRecord | null 
     });
   };
 
-  const payload = useMemo(
+  const previewSrc = pendingPreview || form.image_url;
+
+  const payloadBase = useMemo(
     () => ({
       name: form.name.trim(),
       slug: form.slug.trim() || slugify(form.name),
@@ -85,7 +100,6 @@ export function AttractionForm({ initial }: { initial?: AttractionRecord | null 
         .split(/[,，、\n]/)
         .map((x) => x.trim())
         .filter(Boolean),
-      image_url: form.image_url || null,
       image_credit: form.image_credit.trim(),
       image_license_source: form.image_license_source.trim(),
       published: form.published,
@@ -94,25 +108,36 @@ export function AttractionForm({ initial }: { initial?: AttractionRecord | null 
     [form],
   );
 
-  const onUpload = async (file: File | null) => {
+  const onPickFile = (file: File | null) => {
+    setError("");
+    setPreviewBroken(false);
     if (!file) return;
     if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
       setError("仅支持 JPG、PNG、WebP");
       return;
     }
-    setUploading(true);
+    if (file.size > 8 * 1024 * 1024) {
+      setError("图片过大，请选择 8MB 以内的图片");
+      return;
+    }
+    if (pendingPreview) URL.revokeObjectURL(pendingPreview);
+    setPendingFile(file);
+    setPendingPreview(URL.createObjectURL(file));
+  };
+
+  const clearImage = async () => {
     setError("");
     try {
-      if (form.image_url?.includes("/storage/v1/object/public/media/")) {
+      if (pendingPreview) URL.revokeObjectURL(pendingPreview);
+      setPendingFile(null);
+      setPendingPreview("");
+      if (form.image_url) {
         await deleteMediaByUrl(form.image_url);
+        setField("image_url", "");
       }
-      const { publicUrl } = await uploadMediaFile(file, "attractions");
-      setField("image_url", publicUrl);
       setPreviewBroken(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "图片上传失败");
-    } finally {
-      setUploading(false);
+      setError(formatUnknownError(err, "删除图片失败"));
     }
   };
 
@@ -121,30 +146,67 @@ export function AttractionForm({ initial }: { initial?: AttractionRecord | null 
     setSaving(true);
     setError("");
     try {
-      const supabase = createClient();
-      if (isEdit && initial) {
-        const { error: updateError } = await supabase.from("attractions").update(payload).eq("id", initial.id);
-        if (updateError) throw updateError;
-        await logAdminActivity({
-          entity_type: "attraction",
-          entity_id: initial.id,
-          entity_name: payload.name,
-          action: "更新",
-        });
-      } else {
-        const { data, error: insertError } = await supabase.from("attractions").insert(payload).select("id").single();
-        if (insertError) throw insertError;
-        await logAdminActivity({
-          entity_type: "attraction",
-          entity_id: data.id,
-          entity_name: payload.name,
-          action: "新增",
-        });
+      if (form.image_url.startsWith("blob:")) {
+        throw new Error("图片尚未上传到 Storage，请重新选择图片后保存");
       }
+
+      const supabase = createClient();
+      let attractionId = initial?.id || "";
+      let imageUrl = form.image_url || null;
+
+      if (isEdit && initial) {
+        const { error: updateError } = await supabase
+          .from("attractions")
+          .update({ ...payloadBase, image_url: imageUrl })
+          .eq("id", initial.id);
+        if (updateError) throw updateError;
+        attractionId = initial.id;
+      } else {
+        const { data, error: insertError } = await supabase
+          .from("attractions")
+          .insert({ ...payloadBase, image_url: null })
+          .select("id")
+          .single();
+        if (insertError) throw insertError;
+        attractionId = data.id;
+      }
+
+      if (pendingFile) {
+        try {
+          const uploaded = await uploadMediaFile(pendingFile, {
+            entityType: "attractions",
+            entityId: attractionId,
+            replaceUrl: imageUrl,
+          });
+          imageUrl = uploaded.publicUrl;
+          const { error: imageUpdateError } = await supabase
+            .from("attractions")
+            .update({ image_url: imageUrl })
+            .eq("id", attractionId);
+          if (imageUpdateError) throw imageUpdateError;
+          setField("image_url", imageUrl);
+          setPendingFile(null);
+          if (pendingPreview) URL.revokeObjectURL(pendingPreview);
+          setPendingPreview("");
+        } catch (uploadErr) {
+          throw new Error(
+            `景区已保存，但图片上传失败：${formatUnknownError(uploadErr)}。请重新选择图片后再保存。`,
+          );
+        }
+      }
+
+      await logAdminActivity({
+        entity_type: "attraction",
+        entity_id: attractionId,
+        entity_name: payloadBase.name,
+        action: isEdit ? "更新" : "新增",
+        summary: pendingFile ? "含图片上传" : undefined,
+      });
+
       router.push("/admin/attractions");
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "保存失败");
+      setError(formatUnknownError(err, "保存失败"));
     } finally {
       setSaving(false);
     }
@@ -229,17 +291,19 @@ export function AttractionForm({ initial }: { initial?: AttractionRecord | null 
 
       <div className="field-grid cols-2">
         <div>
-          <span className="mb-1 block text-xs text-[#7a7168]">景区图片（JPG/PNG/WebP → 自动压缩为 1600×960 WebP）</span>
+          <span className="mb-1 block text-xs text-[#7a7168]">
+            景区图片（选择后点保存才会上传到 Storage；JPG/PNG/WebP → 1600×960 WebP）
+          </span>
           <input
             type="file"
             accept="image/jpeg,image/png,image/webp"
-            onChange={(e) => onUpload(e.target.files?.[0] || null)}
+            onChange={(e) => onPickFile(e.target.files?.[0] || null)}
           />
           <div className="mt-3 flex items-start gap-3">
-            {form.image_url && !previewBroken ? (
+            {previewSrc && !previewBroken ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
-                src={form.image_url}
+                src={previewSrc}
                 alt="预览"
                 className="thumb !h-24 !w-40"
                 onError={() => setPreviewBroken(true)}
@@ -250,19 +314,16 @@ export function AttractionForm({ initial }: { initial?: AttractionRecord | null 
               </div>
             )}
             <div className="space-y-2">
-              <button
-                type="button"
-                className="ghost-btn"
-                disabled={!form.image_url || uploading}
-                onClick={async () => {
-                  await deleteMediaByUrl(form.image_url);
-                  setField("image_url", "");
-                  setPreviewBroken(false);
-                }}
-              >
+              <button type="button" className="ghost-btn" disabled={!previewSrc || saving} onClick={clearImage}>
                 删除图片
               </button>
-              <p className="text-xs text-[#8a8076]">{uploading ? "正在压缩上传…" : form.image_url || "尚未上传"}</p>
+              <p className="text-xs text-[#8a8076]">
+                {pendingFile
+                  ? `待上传：${pendingFile.name}（保存后写入 Storage）`
+                  : form.image_url
+                    ? form.image_url
+                    : "尚未上传"}
+              </p>
             </div>
           </div>
         </div>
@@ -281,7 +342,7 @@ export function AttractionForm({ initial }: { initial?: AttractionRecord | null 
       {error ? <p className="text-sm text-[#9b2c2c]">{error}</p> : null}
 
       <div className="flex flex-wrap gap-2">
-        <button type="submit" className="primary-btn" disabled={saving || uploading}>
+        <button type="submit" className="primary-btn" disabled={saving}>
           {saving ? "保存中…" : "保存"}
         </button>
         <button type="button" className="ghost-btn" onClick={() => router.push("/admin/attractions")}>

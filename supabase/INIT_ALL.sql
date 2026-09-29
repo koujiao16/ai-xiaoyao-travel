@@ -1,5 +1,7 @@
--- Prefer running supabase/INIT_ALL.sql (same content) as a one-shot in SQL Editor.
--- Xiaoyao Travel itinerary CMS schema
+-- Xiaoyao Travel itinerary CMS — ONE-SHOT init for Supabase SQL Editor
+-- File: supabase/INIT_ALL.sql
+-- Open SQL Editor → paste this entire file → Run
+--
 
 create extension if not exists "pgcrypto";
 
@@ -403,7 +405,9 @@ create policy "media_admin_delete"
   on storage.objects for delete
   using (bucket_id = 'media' and public.is_admin());
 
+-- ---------------------------------------------------------------------------
 -- API role grants (required for Publishable / Secret keys via PostgREST)
+-- ---------------------------------------------------------------------------
 grant usage on schema public to postgres, anon, authenticated, service_role;
 grant all on all tables in schema public to postgres, anon, authenticated, service_role;
 grant all on all sequences in schema public to postgres, anon, authenticated, service_role;
