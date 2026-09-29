@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
-import { SiteFooter } from "@/components/site/SiteFooter";
-import { SiteNav } from "@/components/site/SiteNav";
+import { SiteChrome } from "@/components/site/SiteChrome";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -33,9 +32,7 @@ export default function RootLayout({
     <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
       <body className="min-h-screen bg-navy-950 text-ivory-100 antialiased">
         <div className="grain">
-          <SiteNav />
-          {children}
-          <SiteFooter />
+          <SiteChrome>{children}</SiteChrome>
         </div>
       </body>
     </html>

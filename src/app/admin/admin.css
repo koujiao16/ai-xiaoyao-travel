@@ -1,0 +1,162 @@
+.admin-shell input,
+.admin-shell select,
+.admin-shell textarea,
+.admin-shell button {
+  font: inherit;
+}
+
+.admin-shell input,
+.admin-shell select,
+.admin-shell textarea {
+  width: 100%;
+  border: 1px solid #d9cbb8;
+  border-radius: 0.5rem;
+  background: #fff;
+  padding: 0.55rem 0.75rem;
+  color: #2e2924;
+}
+
+.admin-shell textarea {
+  min-height: 6rem;
+  resize: vertical;
+}
+
+.admin-shell label > span {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.8rem;
+  color: #7a7168;
+}
+
+.admin-shell .field-grid {
+  display: grid;
+  gap: 0.9rem;
+}
+
+@media (min-width: 768px) {
+  .admin-shell .field-grid.cols-2 {
+    grid-template-columns: 1fr 1fr;
+  }
+  .admin-shell .field-grid.cols-3 {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+}
+
+.admin-shell .panel {
+  border: 1px solid #e2d6c6;
+  border-radius: 0.9rem;
+  background: #fff;
+  padding: 1rem;
+  box-shadow: 0 1px 2px rgba(46, 41, 36, 0.04);
+}
+
+.admin-shell table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.admin-shell th,
+.admin-shell td {
+  border-bottom: 1px solid #efe6da;
+  padding: 0.7rem 0.5rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.admin-shell th {
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #8a8076;
+}
+
+.admin-shell .badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.15rem 0.55rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.admin-shell .badge-on {
+  background: #e8f2ea;
+  color: #2f6b3c;
+}
+
+.admin-shell .badge-off {
+  background: #f3ece4;
+  color: #8a8076;
+}
+
+.admin-shell .row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.admin-shell .row-actions a,
+.admin-shell .row-actions button {
+  border: 1px solid #d9cbb8;
+  border-radius: 0.4rem;
+  background: #fff;
+  padding: 0.25rem 0.55rem;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.admin-shell .danger {
+  color: #9b2c2c;
+  border-color: #efc2c2 !important;
+}
+
+.admin-shell .primary-btn {
+  border: none;
+  border-radius: 0.5rem;
+  background: #8b3e2f;
+  color: #fff;
+  padding: 0.55rem 0.9rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.admin-shell .ghost-btn {
+  border: 1px solid #d9cbb8;
+  border-radius: 0.5rem;
+  background: #fff;
+  padding: 0.55rem 0.9rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.admin-shell .login-wrap {
+  min-height: calc(100vh - 2rem);
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+}
+
+.admin-shell .login-card {
+  width: min(100%, 420px);
+  border: 1px solid #e2d6c6;
+  border-radius: 1rem;
+  background: linear-gradient(180deg, #fffdf9, #f7f1e8);
+  padding: 1.5rem;
+  box-shadow: 0 10px 30px rgba(46, 41, 36, 0.08);
+}
+
+.admin-shell .thumb {
+  width: 72px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 0.35rem;
+  background: #efe6da;
+}
+
+.admin-shell .drag-handle {
+  cursor: grab;
+  color: #a89c90;
+  user-select: none;
+}
