@@ -109,7 +109,7 @@ export function XingchengBuilder({ library, lodgingOptions, dataSource = "local"
       return;
     }
     if (day.photoItems.length >= 3) {
-      setMessage(`Day${day.id}最多只能选择3张景区图片`);
+      setMessage(`Day${day.id}最多只能选择3张项目图片`);
       return;
     }
     updateDay(day.id, { photoItems: [...day.photoItems, itemId] });
@@ -140,12 +140,22 @@ export function XingchengBuilder({ library, lodgingOptions, dataSource = "local"
       return false;
     }
     if (nextDays.some((day) => day.query.trim().length > 0 || day.items.length === 0)) {
-      setMessage("有景点尚未从联想结果中确认，请检查红色输入框");
+      setMessage("有项目尚未从联想结果中确认，请检查红色输入框");
       setTimeout(() => document.querySelector(".field-error")?.scrollIntoView({ behavior: "smooth", block: "center" }), 0);
       return false;
     }
     setMessage("");
     return true;
+  };
+
+  const copyLodging = async (day: DayPlan) => {
+    if (!day.lodging || day.lodging === NO_LODGING_LABEL) return;
+    try {
+      await navigator.clipboard.writeText(day.lodging);
+      setMessage(`Day${day.id}住宿已复制`);
+    } catch {
+      setMessage("复制失败，请手动复制");
+    }
   };
 
   const exportDocx = async () => {
@@ -538,13 +548,20 @@ export function XingchengBuilder({ library, lodgingOptions, dataSource = "local"
   return (
     <main className="trip-builder">
       <header className="topbar">
-        <div className="brand-mark">行</div>
+        <Image
+          className="brand-mark"
+          src="/images/branding/ai-xiaoyao-mark.png"
+          alt="爱逍遥"
+          width={44}
+          height={44}
+          priority
+        />
         <div>
-          <strong>行程生成器</strong>
+          <strong>爱逍遥行程生成器</strong>
           <span>简单选择，快速成稿</span>
         </div>
         <div className="topbar-end">
-          <div className="library-count">景点资料库 · {safeLibrary.length} 项{dataSource === "local" ? "（本地）" : ""}</div>
+          <div className="library-count">项目资料库 · {safeLibrary.length} 项{dataSource === "local" ? "（本地）" : ""}</div>
           <Link href="/admin" className="admin-entry" aria-label="管理后台">
             <svg className="admin-entry-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <path
@@ -597,7 +614,7 @@ export function XingchengBuilder({ library, lodgingOptions, dataSource = "local"
         <div className="section-heading">
           <div>
             <span>每日安排</span>
-            <h2>按天添加景点</h2>
+            <h2>按天添加项目</h2>
           </div>
           <p>输入关键词后，请点击联想结果确认</p>
         </div>
@@ -639,13 +656,13 @@ export function XingchengBuilder({ library, lodgingOptions, dataSource = "local"
                       ))}
                     </div>
                     <input
-                      aria-label={`Day${day.id}景点关键词`}
+                      aria-label={`Day${day.id}项目关键词`}
                       value={day.query}
                       onChange={(event) => updateDay(day.id, { query: event.target.value, touched: false })}
                       onBlur={() => {
                         if (day.query.trim() || day.items.length === 0) updateDay(day.id, { touched: true });
                       }}
-                      placeholder="输入景点关键词，例如：城墙、华山、接机"
+                      placeholder="输入项目关键词，例如：城墙、华山、接机"
                     />
                     {day.query.trim() && (
                       <div className="suggestions" role="listbox">
@@ -658,7 +675,6 @@ export function XingchengBuilder({ library, lodgingOptions, dataSource = "local"
                           >
                             <span>
                               {item.name}
-                              <small>{item.kind}</small>
                               {item.seasonal ? <small className="seasonal-tag">{item.seasonal}</small> : null}
                             </span>
                             {item.duration && <em>{item.duration}</em>}
@@ -667,7 +683,7 @@ export function XingchengBuilder({ library, lodgingOptions, dataSource = "local"
                       </div>
                     )}
                   </div>
-                  {invalid && <p className="error-note">请从联想结果中选择景点或服务项目</p>}
+                  {invalid && <p className="error-note">请从联想结果中选择项目</p>}
 
                   <div className="day-options">
                     <fieldset>
@@ -681,16 +697,35 @@ export function XingchengBuilder({ library, lodgingOptions, dataSource = "local"
                         ))}
                       </div>
                     </fieldset>
-                    <label className="lodging-select">
+                    <div className="lodging-select">
                       <span>当天住宿</span>
-                      <select value={day.lodging} onChange={(event) => updateDay(day.id, { lodging: event.target.value })}>
+                      <div className="lodging-input-wrap">
+                        <input
+                          className="lodging-input"
+                          list={`lodging-options-${day.id}`}
+                          value={day.lodging}
+                          onChange={(event) => updateDay(day.id, { lodging: event.target.value })}
+                          placeholder="选择或输入住宿名称"
+                        />
+                        <datalist id={`lodging-options-${day.id}`}>
                         {safeLodging.map((option) => (
                           <option key={option} value={option}>
-                            {option}
                           </option>
                         ))}
-                      </select>
-                    </label>
+                        </datalist>
+                        {day.lodging && day.lodging !== NO_LODGING_LABEL ? (
+                          <button type="button" className="lodging-copy" onClick={() => copyLodging(day)}>复制</button>
+                        ) : null}
+                        <button
+                          type="button"
+                          className="lodging-clear"
+                          aria-label="清除当天住宿"
+                          onClick={() => updateDay(day.id, { lodging: NO_LODGING_LABEL })}
+                        >
+                          ×
+                        </button>
+                      </div>
+                    </div>
                   </div>
 
                   <div className="photo-picker">
@@ -699,9 +734,8 @@ export function XingchengBuilder({ library, lodgingOptions, dataSource = "local"
                       <span>最多选择3张，统一放在当天文字最后</span>
                     </div>
                     <div className="photo-options">
-                      {day.items.filter((id) => itemById[id]?.kind === "景点" || itemById[id]?.kind === "服务").length ? (
+                      {day.items.length ? (
                         day.items
-                          .filter((id) => itemById[id]?.kind === "景点" || itemById[id]?.kind === "服务")
                           .map((id) => {
                             const item = itemById[id];
                             const ready = Boolean(item.image) && !brokenImages[item.id];
@@ -737,7 +771,7 @@ export function XingchengBuilder({ library, lodgingOptions, dataSource = "local"
                             );
                           })
                       ) : (
-                        <p>当天没有需要配图的景区</p>
+                        <p>当天没有需要配图的项目</p>
                       )}
                     </div>
                   </div>

@@ -40,16 +40,10 @@ main.trip-builder { min-height: 100vh; padding-bottom: 9rem; }
 }
 
 .trip-builder .brand-mark {
-  width: 40px;
-  height: 40px;
-  border-radius: 13px;
-  display: grid;
-  place-items: center;
-  background: var(--accent);
-  color: white;
-  font-family: "STKaiti", serif;
-  font-size: 22px;
-  box-shadow: 0 7px 18px rgba(158, 71, 56, 0.22);
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  object-fit: contain;
 }
 
 .trip-builder .topbar > div:nth-child(2) { display: flex; flex-direction: column; line-height: 1.2; }
@@ -199,7 +193,20 @@ main.trip-builder { min-height: 100vh; padding-bottom: 9rem; }
 .trip-builder .meal-options input { position: absolute; opacity: 0; pointer-events: none; }
 .trip-builder .meal-options span { min-width: 72px; height: 40px; padding: 0 15px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 10px; color: #615951; background: white; font-size: 13px; transition: .15s; }
 .trip-builder .meal-options input:checked + span { color: white; border-color: var(--green); background: var(--green); box-shadow: 0 5px 13px rgba(84,116,94,.18); }
-.trip-builder .lodging-select select { height: 40px; }
+.trip-builder .lodging-input-wrap { position: relative; display: flex; align-items: center; }
+.trip-builder .lodging-input { height: 40px; padding-right: 76px; }
+.trip-builder .lodging-copy,
+.trip-builder .lodging-clear {
+  position: absolute;
+  border: 0;
+  background: transparent;
+  color: #8a8076;
+  font-size: 12px;
+}
+.trip-builder .lodging-copy { right: 30px; padding: 4px 5px; }
+.trip-builder .lodging-copy:hover { color: var(--accent); }
+.trip-builder .lodging-clear { right: 8px; width: 20px; height: 20px; padding: 0; border-radius: 6px; font-size: 18px; line-height: 1; }
+.trip-builder .lodging-clear:hover { color: white; background: var(--accent); }
 
 .trip-builder .photo-picker { margin-top: 20px; padding-top: 18px; border-top: 1px dashed var(--line); }
 .trip-builder .photo-picker-title { display: flex; align-items: baseline; gap: 10px; margin-bottom: 10px; }
