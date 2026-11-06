@@ -125,6 +125,60 @@ main.trip-builder { min-height: 100vh; padding-bottom: 9rem; }
 .trip-builder input:focus, .trip-builder select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(158,71,56,.1); }
 .trip-builder .sample-button { height: 46px; padding: 0 18px; border: 0; border-radius: 11px; color: var(--accent-deep); background: var(--accent-soft); font-weight: 650; }
 .trip-builder .sample-button:hover { background: #ecd7cd; }
+.trip-builder .region-picker {
+  grid-column: 1;
+  grid-row: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.trip-builder .region-picker > span { color: #6d655e; font-size: 12px; font-weight: 650; }
+.trip-builder .region-picker > small { color: #9a9189; font-size: 11px; }
+.trip-builder .region-options { display: flex; flex-wrap: wrap; gap: 7px; }
+.trip-builder .region-options > button {
+  position: relative;
+  min-width: 56px;
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: #615951;
+  background: #fff;
+  font-size: 12px;
+  transition: .15s;
+}
+.trip-builder .region-options > button:hover,
+.trip-builder .region-options > button:focus-visible { border-color: rgba(158, 71, 56, .55); color: var(--accent-deep); outline: none; }
+.trip-builder .region-options > button.is-selected { border-color: var(--accent); color: white; background: var(--accent); box-shadow: 0 5px 12px rgba(158,71,56,.18); }
+.trip-builder .region-info { margin-left: 4px; font-size: 10px; opacity: .75; }
+.trip-builder .region-tooltip {
+  position: absolute;
+  z-index: 12;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  width: max-content;
+  max-width: 250px;
+  padding: 9px 11px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  border: 1px solid rgba(87, 72, 61, .18);
+  border-radius: 10px;
+  color: #514840;
+  background: #fffdf9;
+  box-shadow: 0 12px 28px rgba(59,45,35,.16);
+  font-size: 11px;
+  line-height: 1.45;
+  text-align: left;
+  transform: translateX(-50%) translateY(3px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .15s, transform .15s;
+}
+.trip-builder .region-tooltip strong { color: var(--accent-deep); font-size: 12px; }
+.trip-builder .region-options > button:hover .region-tooltip,
+.trip-builder .region-options > button:focus .region-tooltip,
+.trip-builder .region-options > button:focus-visible .region-tooltip { transform: translateX(-50%) translateY(0); opacity: 1; }
 
 .trip-builder .days-section { width: min(1040px, calc(100% - 72px)); margin: 72px auto 0; }
 .trip-builder .section-heading { display: flex; align-items: end; justify-content: space-between; margin-bottom: 25px; }
@@ -308,6 +362,13 @@ main.trip-builder { min-height: 100vh; padding-bottom: 9rem; }
   .trip-builder .admin-entry-label-full { display: none; }
   .trip-builder .admin-entry-label-short { display: inline; }
   .trip-builder .setup-card { width: calc(100% - 24px); margin: 16px auto 0; grid-template-columns: 1fr 112px; padding: 18px; gap: 14px; }
+  .trip-builder .region-picker { grid-column: 1 / -1; grid-row: auto; }
+  .trip-builder .region-options { gap: 6px; }
+  .trip-builder .region-options > button { min-width: 52px; padding: 0 8px; }
+  .trip-builder .region-tooltip { left: 0; width: min(250px, calc(100vw - 48px)); transform: translateY(3px); }
+  .trip-builder .region-options > button:hover .region-tooltip,
+  .trip-builder .region-options > button:focus .region-tooltip,
+  .trip-builder .region-options > button:focus-visible .region-tooltip { transform: translateY(0); }
   .trip-builder .sample-button { grid-column: 1 / -1; }
   .trip-builder .days-section { width: calc(100% - 24px); margin-top: 36px; }
   .trip-builder .fee-section { width: calc(100% - 24px); }

@@ -6,6 +6,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useRef, useState } from "react";
 import type { LibraryItem } from "@/lib/xingcheng/types";
+import {
+  ALL_TRAVEL_REGIONS,
+  resolveTravelRegion,
+  TRAVEL_REGIONS,
+  type TravelRegionFilter,
+} from "@/lib/xingcheng/travel-regions";
 import { routeName } from "@/data/xingcheng/library";
 import { NO_LODGING_LABEL } from "@/data/xingcheng/accommodations";
 
@@ -36,10 +42,31 @@ type Props = {
 
 export function XingchengBuilder({ library, lodgingOptions, dataSource = "local" }: Props) {
   const [tripName, setTripName] = useState("西安华山3日游");
+  const [selectedRegion, setSelectedRegion] = useState<TravelRegionFilter>(ALL_TRAVEL_REGIONS);
   const safeLibrary = useMemo(() => (library.length ? library : []), [library]);
   const safeLodging = useMemo(
     () => (lodgingOptions.length ? lodgingOptions : [NO_LODGING_LABEL]),
     [lodgingOptions],
+  );
+  const visibleLibrary = useMemo(
+    () =>
+      safeLibrary.filter(
+        (item) =>
+          selectedRegion === ALL_TRAVEL_REGIONS ||
+          item.kind === "服务" ||
+          resolveTravelRegion(item) === selectedRegion,
+      ),
+    [safeLibrary, selectedRegion],
+  );
+  const visibleLodging = useMemo(
+    () =>
+      safeLodging.filter(
+        (name) =>
+          name === NO_LODGING_LABEL ||
+          selectedRegion === ALL_TRAVEL_REGIONS ||
+          resolveTravelRegion({ name }) === selectedRegion,
+      ),
+    [safeLodging, selectedRegion],
   );
   const [days, setDays] = useState<DayPlan[]>(initialDays);
   const [feeIncluded, setFeeIncluded] = useState("");
@@ -77,7 +104,7 @@ export function XingchengBuilder({ library, lodgingOptions, dataSource = "local"
   const suggestionsFor = (day: DayPlan) => {
     const query = day.query.trim().toLowerCase();
     if (!query) return [];
-    return safeLibrary
+    return visibleLibrary
       .filter((item) => !day.items.includes(item.id))
       .filter((item) =>
         [item.name, ...item.keywords].some((keyword) => keyword.toLowerCase().includes(query)),
@@ -561,7 +588,7 @@ export function XingchengBuilder({ library, lodgingOptions, dataSource = "local"
           <span>简单选择，快速成稿</span>
         </div>
         <div className="topbar-end">
-          <div className="library-count">项目资料库 · {safeLibrary.length} 项{dataSource === "local" ? "（本地）" : ""}</div>
+          <div className="library-count">项目资料库 · {visibleLibrary.length} 项{dataSource === "local" ? "（本地）" : ""}</div>
           <Link href="/admin" className="admin-entry" aria-label="管理后台">
             <svg className="admin-entry-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <path
@@ -597,6 +624,35 @@ export function XingchengBuilder({ library, lodgingOptions, dataSource = "local"
             ))}
           </select>
         </label>
+        <div className="region-picker" aria-label="出行区域筛选">
+          <span>出行区域</span>
+          <div className="region-options">
+            <button
+              type="button"
+              className={selectedRegion === ALL_TRAVEL_REGIONS ? "is-selected" : ""}
+              onClick={() => setSelectedRegion(ALL_TRAVEL_REGIONS)}
+            >
+              全部
+            </button>
+            {TRAVEL_REGIONS.map((region) => (
+              <button
+                type="button"
+                key={region.id}
+                className={selectedRegion === region.id ? "is-selected" : ""}
+                onClick={() => setSelectedRegion(region.id)}
+                aria-label={`${region.id}：${region.provinces}`}
+              >
+                {region.id}
+                <span className="region-info" aria-hidden="true">ⓘ</span>
+                <span className="region-tooltip">
+                  <strong>{region.id}</strong>
+                  <span>{region.provinces}</span>
+                </span>
+              </button>
+            ))}
+          </div>
+          <small>景区与住宿按区域筛选，接送等服务始终可选</small>
+        </div>
         <button
           type="button"
           className="sample-button"
@@ -708,7 +764,7 @@ export function XingchengBuilder({ library, lodgingOptions, dataSource = "local"
                           placeholder="选择或输入住宿名称"
                         />
                         <datalist id={`lodging-options-${day.id}`}>
-                        {safeLodging.map((option) => (
+                        {visibleLodging.map((option) => (
                           <option key={option} value={option}>
                           </option>
                         ))}
