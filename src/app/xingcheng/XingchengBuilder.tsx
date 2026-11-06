@@ -699,9 +699,9 @@ export function XingchengBuilder({ library, lodgingOptions, dataSource = "local"
                       <span>最多选择3张，统一放在当天文字最后</span>
                     </div>
                     <div className="photo-options">
-                      {day.items.filter((id) => itemById[id]?.kind === "景点").length ? (
+                      {day.items.filter((id) => itemById[id]?.kind === "景点" || itemById[id]?.kind === "服务").length ? (
                         day.items
-                          .filter((id) => itemById[id]?.kind === "景点")
+                          .filter((id) => itemById[id]?.kind === "景点" || itemById[id]?.kind === "服务")
                           .map((id) => {
                             const item = itemById[id];
                             const ready = Boolean(item.image) && !brokenImages[item.id];
