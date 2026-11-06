@@ -344,6 +344,9 @@ main.trip-builder { min-height: 100vh; padding-bottom: 9rem; }
 .trip-builder .action-bar strong { font-size: 14px; }
 .trip-builder .action-bar span { margin-top: 4px; color: rgba(255,255,255,.58); font-size: 11px; }
 .trip-builder .action-bar p { margin: 0 auto; font-size: 12px; }
+.trip-builder .word-script-select { display: flex; align-items: center; gap: 8px; color: rgba(255,255,255,.75); font-size: 12px; white-space: nowrap; }
+.trip-builder .word-script-select select { width: 118px; height: 36px; padding: 0 8px; border: 1px solid rgba(255,255,255,.22); border-radius: 9px; color: white; background: rgba(255,255,255,.1); font-size: 12px; }
+.trip-builder .word-script-select option { color: #2e2924; background: white; }
 .trip-builder .status-message { color: #ffbbb4; }
 .trip-builder .success-message { color: #bfe2c7; }
 .trip-builder .action-bar > button { height: 46px; margin-left: auto; padding: 0 23px; border: 0; border-radius: 12px; color: white; background: var(--accent); font-weight: 700; box-shadow: 0 7px 18px rgba(158,71,56,.28); }
@@ -386,6 +389,7 @@ main.trip-builder { min-height: 100vh; padding-bottom: 9rem; }
   .trip-builder .action-bar { bottom: 10px; padding: 12px; flex-wrap: wrap; gap: 8px; }
   .trip-builder .action-bar > div { min-width: 0; flex: 1; }
   .trip-builder .action-bar p { width: 100%; order: 3; text-align: center; }
+  .trip-builder .word-script-select { margin-left: auto; }
   .trip-builder .action-bar > button { padding: 0 16px; }
 }
 

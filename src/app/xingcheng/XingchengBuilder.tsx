@@ -71,6 +71,7 @@ export function XingchengBuilder({ library, lodgingOptions, dataSource = "local"
   const [days, setDays] = useState<DayPlan[]>(initialDays);
   const [feeIncluded, setFeeIncluded] = useState("");
   const [feeExcluded, setFeeExcluded] = useState("");
+  const [wordScript, setWordScript] = useState<"simplified" | "hongkongTraditional">("simplified");
   const [exporting, setExporting] = useState(false);
   const [message, setMessage] = useState("");
   const [brokenImages, setBrokenImages] = useState<Record<string, true>>({});
@@ -204,6 +205,12 @@ export function XingchengBuilder({ library, lodgingOptions, dataSource = "local"
         TextRun,
         WidthType,
       } = await import("docx");
+      let toWordText = (value: string) => value;
+      if (wordScript === "hongkongTraditional") {
+        const OpenCC = (await import("opencc-js")).default;
+        const converter = OpenCC.Converter({ from: "cn", to: "hk" });
+        toWordText = (value: string) => converter(value);
+      }
 
       const photoBuffers = new Map<string, ArrayBuffer>();
       const photoIds = [...new Set(days.flatMap((day) => day.photoItems))];
@@ -238,14 +245,14 @@ export function XingchengBuilder({ library, lodgingOptions, dataSource = "local"
           spacing: { before: 0, after: 0, line: 1 },
           children: [new TextRun({ text: "", size: 1 })],
         });
-      const formatLodgingLabel = (lodging: string) => (lodging === "不住宿" ? "不住宿" : `住：${lodging}`);
+      const formatLodgingLabel = (lodging: string) => toWordText(lodging === "不住宿" ? "不住宿" : `住：${lodging}`);
       const feeBodyParagraphs = (text: string) => {
         const lines = text.trim() ? text.replace(/\r\n/g, "\n").split("\n") : ["暂无说明"];
         return lines.map(
           (line) =>
             new Paragraph({
               spacing: zeroSpacing,
-              children: [new TextRun({ text: line.length ? line : " " })],
+              children: [new TextRun({ text: line.length ? toWordText(line) : " " })],
             }),
         );
       };
@@ -265,7 +272,7 @@ export function XingchengBuilder({ library, lodgingOptions, dataSource = "local"
                   children: [
                     new Paragraph({
                       spacing: zeroSpacing,
-                      children: [new TextRun({ text: title, bold: true, size: 27, color: "FFFFFF" })],
+                      children: [new TextRun({ text: toWordText(title), bold: true, size: 27, color: "FFFFFF" })],
                     }),
                   ],
                 }),
@@ -301,7 +308,7 @@ export function XingchengBuilder({ library, lodgingOptions, dataSource = "local"
                 children: [
                   new Paragraph({
                     spacing: zeroSpacing,
-                    children: [new TextRun({ text: "简版行程安排", bold: true, size: 27, color: "FFFFFF" })],
+                    children: [new TextRun({ text: toWordText("简版行程安排"), bold: true, size: 27, color: "FFFFFF" })],
                   }),
                 ],
               }),
@@ -311,8 +318,8 @@ export function XingchengBuilder({ library, lodgingOptions, dataSource = "local"
             const selected = day.items
               .map((id) => itemById[id])
               .filter((item): item is NonNullable<typeof item> => Boolean(item));
-            const route = selected.map((item) => routeName(item)).join(" → ") || "待安排";
-            const meals = day.meals.length ? day.meals.join("、") : "不含餐";
+            const route = toWordText(selected.map((item) => routeName(item)).join(" → ") || "待安排");
+            const meals = toWordText(day.meals.length ? day.meals.join("、") : "不含餐");
             return new TableRow({
               children: [
                 new TableCell({
@@ -369,7 +376,7 @@ export function XingchengBuilder({ library, lodgingOptions, dataSource = "local"
         new Paragraph({
           alignment: AlignmentType.CENTER,
           spacing: { after: 200 },
-          children: [new TextRun({ text: tripName.trim(), bold: true, size: 36, color: "2E2924" })],
+          children: [new TextRun({ text: toWordText(tripName.trim()), bold: true, size: 36, color: "2E2924" })],
         }),
         summaryTable,
       ];
@@ -382,16 +389,16 @@ export function XingchengBuilder({ library, lodgingOptions, dataSource = "local"
 
         const narrativeRuns: InstanceType<typeof TextRun>[] = [];
         selected.forEach((item, index) => {
-          narrativeRuns.push(new TextRun({ text: `【${item.name}】`, bold: true, color: "8B3E2F" }));
+          narrativeRuns.push(new TextRun({ text: toWordText(`【${item.name}】`), bold: true, color: "8B3E2F" }));
           if (item.seasonal) {
-            narrativeRuns.push(new TextRun({ text: `（${item.seasonal}）`, bold: true, color: "54745E" }));
+            narrativeRuns.push(new TextRun({ text: toWordText(`（${item.seasonal}）`), bold: true, color: "54745E" }));
           }
           if (item.duration) {
-            narrativeRuns.push(new TextRun({ text: `（游览${item.duration}）`, bold: true, color: "37322E" }));
+            narrativeRuns.push(new TextRun({ text: toWordText(`（游览${item.duration}）`), bold: true, color: "37322E" }));
           }
-          narrativeRuns.push(new TextRun({ text: item.description, color: "37322E" }));
+          narrativeRuns.push(new TextRun({ text: toWordText(item.description), color: "37322E" }));
           if (index < selected.length - 1) {
-            narrativeRuns.push(new TextRun({ text: "；", color: "37322E" }));
+            narrativeRuns.push(new TextRun({ text: toWordText("；"), color: "37322E" }));
           }
         });
         detailContent.push(
@@ -399,7 +406,7 @@ export function XingchengBuilder({ library, lodgingOptions, dataSource = "local"
             spacing: { before: 60, after: 60, line: 360 },
             children: narrativeRuns.length
               ? narrativeRuns
-              : [new TextRun({ text: "当天行程待安排。", color: "37322E" })],
+              : [new TextRun({ text: toWordText("当天行程待安排。"), color: "37322E" })],
           }),
         );
 
@@ -413,7 +420,7 @@ export function XingchengBuilder({ library, lodgingOptions, dataSource = "local"
           detailContent.push(
             new Paragraph({
               spacing: { before: 180, after: 100 },
-              children: [new TextRun({ text: "行程图片", bold: true, color: "8B3E2F" })],
+              children: [new TextRun({ text: toWordText("行程图片"), bold: true, color: "8B3E2F" })],
             }),
             new Table({
               width: { size: 100, type: WidthType.PERCENTAGE },
@@ -443,7 +450,7 @@ export function XingchengBuilder({ library, lodgingOptions, dataSource = "local"
                         new Paragraph({
                           alignment: AlignmentType.CENTER,
                           spacing: { before: 70 },
-                          children: [new TextRun({ text: item.name, bold: true, size: 18, color: "5F5851" })],
+                          children: [new TextRun({ text: toWordText(item.name), bold: true, size: 18, color: "5F5851" })],
                         }),
                       ],
                     }),
@@ -474,7 +481,7 @@ export function XingchengBuilder({ library, lodgingOptions, dataSource = "local"
                         spacing: zeroSpacing,
                         children: [
                           new TextRun({
-                            text: `Day${day.id}  ${selected.map((item) => item.name).join(" · ")}`,
+                            text: toWordText(`Day${day.id}  ${selected.map((item) => item.name).join(" · ")}`),
                             bold: true,
                             size: 27,
                             color: "FFFFFF",
@@ -497,7 +504,7 @@ export function XingchengBuilder({ library, lodgingOptions, dataSource = "local"
                         spacing: zeroSpacing,
                         children: [
                           new TextRun({
-                            text: `用餐：${day.meals.length ? day.meals.join("、") : "不含餐"}`,
+                            text: toWordText(`用餐：${day.meals.length ? day.meals.join("、") : "不含餐"}`),
                             bold: true,
                           }),
                         ],
@@ -512,7 +519,7 @@ export function XingchengBuilder({ library, lodgingOptions, dataSource = "local"
                     children: [
                       new Paragraph({
                         spacing: zeroSpacing,
-                        children: [new TextRun({ text: `住宿：${day.lodging}`, bold: true })],
+                        children: [new TextRun({ text: toWordText(`住宿：${day.lodging}`), bold: true })],
                       }),
                     ],
                   }),
@@ -561,7 +568,7 @@ export function XingchengBuilder({ library, lodgingOptions, dataSource = "local"
       const url = URL.createObjectURL(blob);
       const anchor = document.createElement("a");
       anchor.href = url;
-      anchor.download = `${tripName.trim().replace(/[\\/:*?"<>|]/g, "-")}.docx`;
+        anchor.download = `${toWordText(tripName.trim()).replace(/[\\/:*?"<>|]/g, "-")}.docx`;
       anchor.click();
       URL.revokeObjectURL(url);
       setMessage("Word文档已生成");
@@ -865,6 +872,13 @@ export function XingchengBuilder({ library, lodgingOptions, dataSource = "local"
           <span>{days.length} 天 · 共 {days.reduce((sum, day) => sum + day.items.length, 0)} 个项目</span>
         </div>
         {message && <p className={message.includes("已生成") ? "success-message" : "status-message"}>{message}</p>}
+        <label className="word-script-select">
+          <span>输出文字</span>
+          <select value={wordScript} onChange={(event) => setWordScript(event.target.value as typeof wordScript)}>
+            <option value="simplified">简体中文</option>
+            <option value="hongkongTraditional">繁體（香港）</option>
+          </select>
+        </label>
         <button type="button" onClick={exportDocx} disabled={exporting}>
           {exporting ? "正在生成…" : "生成 Word 文档"}
         </button>
