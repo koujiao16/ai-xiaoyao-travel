@@ -1,5 +1,5 @@
-import { QuoteBuilder } from "./QuoteBuilder";
+import { CompactQuoteBuilder } from "./CompactQuoteBuilder";
 
 export default function BaojiaPage() {
-  return <QuoteBuilder />;
+  return <CompactQuoteBuilder />;
 }
