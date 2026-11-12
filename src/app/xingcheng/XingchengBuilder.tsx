@@ -579,6 +579,25 @@ export function XingchengBuilder({ library, lodgingOptions, dataSource = "local"
     }
   };
 
+  const openQuote = () => {
+    if (!validate()) return;
+    const items = days.flatMap((day) =>
+      day.items.map((id) => ({
+        id,
+        name: itemById[id]?.name || id,
+        kind: itemById[id]?.kind || "景点",
+        province: itemById[id]?.province || "",
+        city: itemById[id]?.city || "",
+        day: day.id,
+      })),
+    );
+    const lodgings = days
+      .filter((day) => day.lodging && day.lodging !== NO_LODGING_LABEL)
+      .map((day) => ({ name: day.lodging, day: day.id }));
+    localStorage.setItem("ai-xiaoyao-quote-draft", JSON.stringify({ tripName: tripName.trim(), items, lodgings }));
+    window.location.href = "/baojia";
+  };
+
   return (
     <main className="trip-builder">
       <header className="topbar">
@@ -880,6 +899,7 @@ export function XingchengBuilder({ library, lodgingOptions, dataSource = "local"
             <option value="hongkongTraditional">繁體（香港）</option>
           </select>
         </label>
+        <button type="button" className="quote-action-button" onClick={openQuote}>生成报价</button>
         <button type="button" onClick={exportDocx} disabled={exporting}>
           {exporting ? "正在生成…" : "生成 Word 文档"}
         </button>
