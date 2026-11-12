@@ -1,5 +1,7 @@
 import { CompactQuoteBuilder } from "./CompactQuoteBuilder";
+import { fetchPublishedLibrary } from "@/lib/xingcheng/data";
 
-export default function BaojiaPage() {
-  return <CompactQuoteBuilder />;
+export default async function BaojiaPage() {
+  const library = await fetchPublishedLibrary();
+  return <CompactQuoteBuilder library={library} />;
 }
