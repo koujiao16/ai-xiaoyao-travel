@@ -596,6 +596,7 @@ export function XingchengBuilder({ library, lodgingOptions, dataSource = "local"
         </div>
         <div className="topbar-end">
           <div className="library-count">项目资料库 · {visibleLibrary.length} 项{dataSource === "local" ? "（本地）" : ""}</div>
+          <Link href="/baojia" className="admin-entry">报价工具</Link>
           <Link href="/admin" className="admin-entry" aria-label="管理后台">
             <svg className="admin-entry-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <path
