@@ -594,7 +594,7 @@ export function XingchengBuilder({ library, lodgingOptions, dataSource = "local"
     const lodgings = days
       .filter((day) => day.lodging && day.lodging !== NO_LODGING_LABEL)
       .map((day) => ({ name: day.lodging, day: day.id }));
-    localStorage.setItem("ai-xiaoyao-quote-draft", JSON.stringify({ tripName: tripName.trim(), items, lodgings }));
+    localStorage.setItem("ai-xiaoyao-quote-draft", JSON.stringify({ tripName: tripName.trim(), items, lodgings, details: Object.fromEntries(days.map(d => [d.id, { meals: d.meals, lodging: d.lodging }])) }));
     window.location.href = "/baojia";
   };
 

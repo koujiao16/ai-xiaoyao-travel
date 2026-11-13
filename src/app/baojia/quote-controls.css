@@ -1,0 +1,7 @@
+.itinerary-summary .itinerary-day{display:grid;grid-template-columns:38px minmax(0,1fr)}
+.daily-options{grid-column:2;display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.daily-options button,.quote-result button{border:1px solid #c4b8ab;border-radius:8px;padding:6px 12px}
+.daily-options button[aria-pressed=true]{background:#54745e;color:white}
+.quote-result button{background:#9e4738;color:white}
+.itinerary-summary .itinerary-title{flex:1;min-width:10em}
+.itinerary-summary .day-count+.day-count{margin-left:0}
