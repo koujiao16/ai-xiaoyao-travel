@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { LodgingSearch } from "@/components/ui/LodgingSearch";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { effectiveQuotePrice, getProjectQuotePrices, isKnownFreeTicket, type QuotePriceItem, type QuotePriceGroup, type QuotePriceMode } from "@/lib/xingcheng/quote-pricing";
@@ -42,7 +43,6 @@ export function CompactQuoteBuilder({ library }: { library: LibraryItem[] }) {
   const [dayCount, setDayCount] = useState(3);
   const [queries, setQueries] = useState<Record<number, string>>({});
   const [dayDetails, setDayDetails] = useState<Record<number, DayDetails>>({});
-  const [lodgingQueries, setLodgingQueries] = useState<Record<number, string>>({});
   const [remarks, setRemarks] = useState("此报价按实际人数核算，人数不同价格不同。\n以上报价为预估报价，实际成团前请再次核对相关费用。\n建议至少提前 15 天确定行程，以便预订酒店、车辆、导游及相关资源。\n报价不含行程以外的个人消费及自费项目。\n如产生单人入住，须按实际酒店价格补单房差。\n景区、演出、酒店等如遇官方价格政策调整，按实际产生费用为准。\n具体行程安排、酒店、车辆及导游，以最终确认单为准。");
   const [exporting, setExporting] = useState(false);
   const [message, setMessage] = useState("");
@@ -142,12 +142,6 @@ export function CompactQuoteBuilder({ library }: { library: LibraryItem[] }) {
   };
   const setLodging = (day: number, lodging: string) => {
     setDayDetails((current) => ({ ...current, [day]: { ...(current[day] || { meals: [] }), lodging } }));
-    setLodgingQueries((current) => ({ ...current, [day]: "" }));
-  };
-  const lodgingSuggestions = (day: number) => {
-    const query = (lodgingQueries[day] || "").trim().toLowerCase();
-    if (!query) return [];
-    return cities.filter((city) => city?.toLowerCase().includes(query)).slice(0, 6);
   };
 
   const exportQuote = async () => {
@@ -237,7 +231,7 @@ export function CompactQuoteBuilder({ library }: { library: LibraryItem[] }) {
       <div><span>简版行程</span><input className="itinerary-title" value={title} onChange={(event) => setTitle(event.target.value)} /><label className="day-count">天数<input type="number" min="1" max="15" value={dayCount} onChange={(event) => setDayCount(Math.max(1, Math.min(15, asNumber(Number(event.target.value), 1))))} /></label><label className="day-count">核算人数<input type="number" min="1" value={travelers} onChange={(event) => setTravelers(Math.max(1, asNumber(Number(event.target.value), 1)))} /></label></div>
       {Array.from({ length: dayCount }, (_, index) => index + 1).map((day) => {
         const suggestions = suggestionsFor(day);
-        return <div className="itinerary-day" key={day}><b>D{day}</b><div className="itinerary-editor"><div className="itinerary-tags">{itinerary.filter((item) => item.day === day).map((item) => <span key={item.quoteKey}>{item.name}<button type="button" onClick={() => removeProject(item.quoteKey)}>×</button></span>)}</div><input value={queries[day] || ""} aria-label={`D${day}项目名称或关键词`} placeholder="输入关键词，或填写自定义项目名称" onChange={(event) => setQueries((current) => ({ ...current, [day]: event.target.value }))} /><button className="custom-project-add" type="button" disabled={!(queries[day] || "").trim()} onClick={() => addCustomProject(day)}>＋自定义项目</button>{suggestions.length ? <div className="itinerary-suggestions">{suggestions.map((item) => <button type="button" key={item.id} onClick={() => addProject(day, item)}>{item.name}</button>)}</div> : null}</div><section className="daily-options">{["早餐","中餐","晚餐"].map(m => <button type="button" key={m} aria-pressed={dayDetails[day]?.meals.includes(m) || false} onClick={() => toggleMeal(day,m)}>{m[0]}</button>)}<label>住宿 <input list={`cities-${day}`} placeholder="城市或酒店" value={dayDetails[day]?.lodging || ""} onChange={e => { setLodging(day,e.target.value); setLodgingQueries(q => ({...q,[day]:e.target.value})); }} /></label><datalist id={`cities-${day}`}>{(lodgingQueries[day] ? lodgingSuggestions(day) : cities).map(c => <option key={c} value={c}/>)}</datalist></section></div>;
+        return <div className="itinerary-day" key={day}><b>D{day}</b><div className="itinerary-editor"><div className="itinerary-tags">{itinerary.filter((item) => item.day === day).map((item) => <span key={item.quoteKey}>{item.name}<button type="button" onClick={() => removeProject(item.quoteKey)}>×</button></span>)}</div><input value={queries[day] || ""} aria-label={`D${day}项目名称或关键词`} placeholder="输入关键词，或填写自定义项目名称" onChange={(event) => setQueries((current) => ({ ...current, [day]: event.target.value }))} /><button className="custom-project-add" type="button" disabled={!(queries[day] || "").trim()} onClick={() => addCustomProject(day)}>＋自定义项目</button>{suggestions.length ? <div className="itinerary-suggestions">{suggestions.map((item) => <button type="button" key={item.id} onClick={() => addProject(day, item)}>{item.name}</button>)}</div> : null}</div><section className="daily-options">{["早餐","中餐","晚餐"].map(m => <button type="button" key={m} aria-pressed={dayDetails[day]?.meals.includes(m) || false} onClick={() => toggleMeal(day,m)}>{m[0]}</button>)}<label>住宿 <LodgingSearch value={dayDetails[day]?.lodging || ""} options={cities} onChange={value => setLodging(day, value)} /></label></section></div>;
       })}
     </section>
     <section className="quote-sheet">

@@ -15,6 +15,7 @@ import {
 } from "@/lib/xingcheng/travel-regions";
 import { routeName } from "@/data/xingcheng/library";
 import { NO_LODGING_LABEL } from "@/data/xingcheng/accommodations";
+import { LodgingSearch } from "@/components/ui/LodgingSearch";
 
 
 const PRIORITY_ATTRACTION_IMAGES = new Set(["city-wall", "terracotta", "huashan"]);
@@ -794,19 +795,13 @@ export function XingchengBuilder({ library, lodgingOptions, dataSource = "local"
                     <div className="lodging-select">
                       <span>当天住宿</span>
                       <div className="lodging-input-wrap">
-                        <input
+                        <LodgingSearch
                           className="lodging-input"
-                          list={`lodging-options-${day.id}`}
                           value={day.lodging}
-                          onChange={(event) => updateDay(day.id, { lodging: event.target.value })}
-                          placeholder="选择或输入住宿名称"
+                          options={visibleLodging}
+                          onChange={(lodging) => updateDay(day.id, { lodging })}
+                          placeholder="输入城市或酒店关键词"
                         />
-                        <datalist id={`lodging-options-${day.id}`}>
-                        {visibleLodging.map((option) => (
-                          <option key={option} value={option}>
-                          </option>
-                        ))}
-                        </datalist>
                         {day.lodging && day.lodging !== NO_LODGING_LABEL ? (
                           <button type="button" className="lodging-copy" onClick={() => copyLodging(day)}>复制</button>
                         ) : null}
