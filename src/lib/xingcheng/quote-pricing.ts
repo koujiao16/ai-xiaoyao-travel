@@ -4,7 +4,31 @@ export type QuotePriceItem = {
   name: string; price: number; group: QuotePriceGroup; mode: QuotePriceMode; selected: boolean;
   includedPeople?: number;
   additionalPersonPrice?: number;
+  pricePending?: boolean;
 };
+
+/** Ordinary exterior/public-area visits only, never paid exhibitions or experiences.
+ * Xingqing admission: https://www.xingqinggong.com/
+ * Luoyi reopening: https://www.thepaper.cn/newsDetail_forward_30591120
+ * Public street/square admission is distinct from tower ascent or performances.
+ */
+export const confirmedFreeTicketNames = new Set([
+  "兴庆宫", "兴庆宫公园", "洛邑古城", "应天门外观",
+  "钟鼓楼广场", "回民小吃街", "大唐不夜城", "大雁塔北广场", "永兴坊",
+]);
+
+export function isKnownFreeTicket(item: Pick<QuotePriceItem, "group" | "price" | "pricePending">) {
+  return item.group === "ticket" && item.price === 0 && item.pricePending !== true;
+}
+
+/** Distinguish explicitly free tickets from unknown prices and custom manual items. */
+export function getProjectQuotePrices(item: { id: string; name: string }): QuotePriceItem[] {
+  const custom = item.id.startsWith("custom-");
+  const configured = !custom ? quotePriceCatalog[item.name] : undefined;
+  if (configured) return configured.filter(entry => !isKnownFreeTicket(entry));
+  if (!custom && confirmedFreeTicketNames.has(item.name)) return [];
+  return [{ name: item.name, price: 0, pricePending: true, group: "ticket", mode: "perPerson", selected: true }];
+}
 
 /**
  * Team-approved regular adult defaults from historical quotations.

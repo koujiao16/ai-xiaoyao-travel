@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { effectiveQuotePrice, quotePriceCatalog } from "../src/lib/xingcheng/quote-pricing";
+import { effectiveQuotePrice, getProjectQuotePrices, isKnownFreeTicket, quotePriceCatalog } from "../src/lib/xingcheng/quote-pricing";
 import { baseLibrary } from "../src/data/xingcheng/library";
 import { createCustomProject, isCustomProject } from "../src/lib/xingcheng/custom-project";
 
@@ -9,6 +9,17 @@ assert.equal(custom.name, "特殊景区");
 assert.ok(isCustomProject(custom));
 assert.notEqual(custom.id, createCustomProject("特殊景区")!.id);
 assert.ok(!isCustomProject({ id: "terracotta" }));
+assert.deepEqual(getProjectQuotePrices({ id: "xingqing-palace", name: "兴庆宫" }), []);
+assert.deepEqual(getProjectQuotePrices({ id: "everbright-city", name: "大唐不夜城" }), []);
+const unknown = getProjectQuotePrices({ id: "unknown", name: "未核价景区" });
+assert.equal(unknown.length, 1);
+assert.equal(unknown[0].pricePending, true);
+assert.equal(isKnownFreeTicket(unknown[0]), false);
+assert.equal(isKnownFreeTicket({ group: "ticket", price: 0 }), true);
+assert.equal(isKnownFreeTicket({ group: "extra", price: 0 }), false);
+assert.equal(getProjectQuotePrices({ id: "custom-any", name: "兴庆宫" })[0].pricePending, true);
+assert.ok(getProjectQuotePrices({ id: "xian-museum", name: "西安博物院" }).every(x => x.group === "extra"));
+assert.ok(getProjectQuotePrices({ id: "terracotta", name: "秦始皇兵马俑博物馆" }).some(x => x.group === "ticket" && x.price === 120));
 
 const museum = quotePriceCatalog["秦始皇兵马俑博物馆"];
 assert.equal(museum.find(x => x.group === "ticket")?.price, 120);

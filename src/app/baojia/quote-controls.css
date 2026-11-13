@@ -14,3 +14,5 @@
 .compact-quote .custom-project-add{flex:none;border:1px dashed #bda995;border-radius:6px;background:#fffaf5;color:#8e4436;padding:5px 8px;font-size:12px;cursor:pointer}
 .compact-quote .custom-project-add:disabled{opacity:.45;cursor:default}
 .itinerary-summary .daily-options input{height:30px}
+.compact-quote input[type="number"]{-moz-appearance:textfield;appearance:textfield}
+.compact-quote input[type="number"]::-webkit-inner-spin-button,.compact-quote input[type="number"]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
