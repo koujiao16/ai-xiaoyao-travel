@@ -11,6 +11,18 @@ export const routeName = (item?: LibraryItem | null) => {
 
 export const baseLibrary: LibraryItem[] = [
   {
+    id: "terracotta-diy",
+    name: "兵马俑DIY",
+    keywords: ["兵马俑DIY", "兵马俑制作", "制作兵马俑", "陶俑制作", "DIY"],
+    province: "陕西",
+    city: "西安",
+    region: "西安",
+    category: "研学",
+    duration: "以实际安排为准",
+    description: "在指导下体验陶俑制作，通过动手塑形了解秦俑的造型特点与制作工艺。此项目为独立体验，不包含秦始皇兵马俑博物馆门票。",
+    kind: "景点",
+  },
+  {
     id: "pickup",
     name: "机场接机",
     keywords: ["接机", "机场", "接"],

@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { quotePriceCatalog, type QuotePriceGroup, type QuotePriceMode } from "@/lib/xingcheng/quote-pricing";
+import { effectiveQuotePrice, quotePriceCatalog, type QuotePriceItem, type QuotePriceGroup, type QuotePriceMode } from "@/lib/xingcheng/quote-pricing";
 import type { LibraryItem } from "@/lib/xingcheng/types";
 import "./compact-quote.css";
 import "./compact-itinerary.css";
@@ -11,7 +11,7 @@ import "./quote-controls.css";
 
 type DraftItem = { id: string; name: string; kind: string; province: string; city: string; day: number; quoteKey: string };
 type Draft = { details?: Record<number, DayDetails>; tripName?: string; items?: DraftItem[]; lodgings?: Array<{ name: string; day: number }> };
-type PriceItem = { id: string; name: string; price: number; mode: QuotePriceMode; group: QuotePriceGroup; selected: boolean; locked: boolean; sourceKey?: string };
+type PriceItem = QuotePriceItem & { id: string; locked: boolean; sourceKey?: string };
 type Hotel = { id: string; name: string; roomRate: number; rooms: number; nights: number };
 type Meal = { id: string; name: string; price: number; count: number };
 type GroupCost = { id: string; name: string; price: number; count: number; mode: QuotePriceMode };
@@ -27,7 +27,7 @@ const vehicleLabel = (item: DraftItem) => {
 };
 
 function sectionTotal(items: PriceItem[], travelers: number) {
-  return items.filter((item) => item.selected).reduce((sum, item) => sum + item.price * (item.mode === "perGroup" ? 1 : travelers), 0);
+  return items.filter((item) => item.selected).reduce((sum, item) => sum + effectiveQuotePrice(item, travelers) * (item.mode === "perGroup" ? 1 : travelers), 0);
 }
 
 export function CompactQuoteBuilder({ library }: { library: LibraryItem[] }) {
@@ -38,7 +38,7 @@ export function CompactQuoteBuilder({ library }: { library: LibraryItem[] }) {
   const [queries, setQueries] = useState<Record<number, string>>({});
   const [dayDetails, setDayDetails] = useState<Record<number, DayDetails>>({});
   const [lodgingQueries, setLodgingQueries] = useState<Record<number, string>>({});
-  const [remarks, setRemarks] = useState("此报价按实际人数核算，人数不同价格不同。\n\n以上报价为预估报价，实际成团前请再次核对相关费用。\n\n建议至少提前 15 天确定行程，以便预订酒店、车辆、导游及相关资源。\n\n报价不含行程以外的个人消费及自费项目。\n\n如产生单人入住，须按实际酒店价格补单房差。\n\n景区、演出、酒店等如遇官方价格政策调整，按实际产生费用为准。\n\n具体行程安排、酒店、车辆及导游，以最终确认单为准。");
+  const [remarks, setRemarks] = useState("此报价按实际人数核算，人数不同价格不同。\n以上报价为预估报价，实际成团前请再次核对相关费用。\n建议至少提前 15 天确定行程，以便预订酒店、车辆、导游及相关资源。\n报价不含行程以外的个人消费及自费项目。\n如产生单人入住，须按实际酒店价格补单房差。\n景区、演出、酒店等如遇官方价格政策调整，按实际产生费用为准。\n具体行程安排、酒店、车辆及导游，以最终确认单为准。");
   const [exporting, setExporting] = useState(false);
   const [message, setMessage] = useState("");
   const [tickets, setTickets] = useState<PriceItem[]>([]);
@@ -153,7 +153,7 @@ export function CompactQuoteBuilder({ library }: { library: LibraryItem[] }) {
         return new TableRow({ children: [cell(`D${day}`, 850, true), cell(itinerary.filter((item) => item.day === day).map((item) => item.name).join(" · "), 5100), cell(["早餐","中餐","晚餐"].filter(m => detail.meals.includes(m)).map(m => m[0]).join("、"), 1800), cell(detail.lodging, 2250)] });
       });
       const perPersonText = (amount: number) => `${money.format(amount / Math.max(1, travelers))}/人`;
-      const selected = (items: PriceItem[]) => items.filter((item) => item.selected).map((item) => `${item.name} ${item.price}${item.mode === "perGroup" ? "/团" : "/人"}`).join("  ·  ");
+      const selected = (items: PriceItem[]) => items.filter((item) => item.selected).map((item) => `${item.name} ${effectiveQuotePrice(item, travelers)}${item.mode === "perGroup" ? "/团" : "/人"}`).join("  ·  ");
       const costs: Array<[string, string, string]> = [
         ["门票", selected(tickets), perPersonText(totals.ticket)],
         ["讲解及配套", selected(extras), perPersonText(totals.extra)],
@@ -203,7 +203,7 @@ export function CompactQuoteBuilder({ library }: { library: LibraryItem[] }) {
   }, [tickets, extras, hotels, meals, vehicles, guides, misc, travelers]);
 
   const CostRow = ({ title: rowTitle, children, total }: { title: string; children: React.ReactNode; total: number }) => <section className="compact-row"><h2>{rowTitle}</h2><div className="compact-row-body">{children}</div><strong className="compact-row-total">{money.format(total)}<small>／人 {money.format(total / Math.max(1, travelers))}</small></strong></section>;
-  const pricePills = (items: PriceItem[], set: React.Dispatch<React.SetStateAction<PriceItem[]>>, group: QuotePriceGroup) => <>{items.map((item) => <div className={`price-pill ${item.selected ? "selected" : ""}`} key={item.id}><button type="button" onClick={() => updatePrice(set, item.id, { selected: !item.selected })}>{item.selected ? "✓" : ""}</button><input aria-label="项目名称" readOnly={item.locked} value={item.name} onChange={(event) => updatePrice(set, item.id, { name: event.target.value })} /><input aria-label="价格" type="number" min="0" value={item.price || ""} placeholder="0" onChange={(event) => updatePrice(set, item.id, { price: asNumber(Number(event.target.value)) })} /><span>{item.mode === "perGroup" ? "／团" : "／人"}</span><button className="remove" type="button" onClick={() => set((current) => current.filter((line) => line.id !== item.id))}>×</button></div>)}<button className="add-inline" type="button" onClick={() => set((current) => [...current, { id: uid(), name: group === "ticket" ? "新增门票" : "新增配套", price: 0, mode: "perPerson", group, selected: true, locked: false }])}>＋</button></>;
+  const pricePills = (items: PriceItem[], set: React.Dispatch<React.SetStateAction<PriceItem[]>>, group: QuotePriceGroup) => <>{items.map((item) => <div className={`price-pill ${item.selected ? "selected" : ""}`} key={item.id}><button type="button" onClick={() => updatePrice(set, item.id, { selected: !item.selected })}>{item.selected ? "✓" : ""}</button><input aria-label="项目名称" readOnly={item.locked} value={item.name} onChange={(event) => updatePrice(set, item.id, { name: event.target.value })} /><input aria-label="价格" type="number" min="0" value={item.price || ""} placeholder="0" onChange={(event) => updatePrice(set, item.id, { price: asNumber(Number(event.target.value)) })} /><span title={item.includedPeople ? `含${item.includedPeople}人，超出每人加${item.additionalPersonPrice}元` : undefined}>{item.mode === "perGroup" ? "／团" : "／人"}{item.includedPeople ? `（含${item.includedPeople}人，超员+${item.additionalPersonPrice}/人；现${effectiveQuotePrice(item, travelers)}元）` : ""}</span><button className="remove" type="button" onClick={() => set((current) => current.filter((line) => line.id !== item.id))}>×</button></div>)}<button className="add-inline" type="button" onClick={() => set((current) => [...current, { id: uid(), name: group === "ticket" ? "新增门票" : "新增配套", price: 0, mode: "perPerson", group, selected: true, locked: false }])}>＋</button></>;
   const groupFields = (items: GroupCost[], set: React.Dispatch<React.SetStateAction<GroupCost[]>>, defaultName: string) => <>{items.map((item) => <div className="cost-inline" key={item.id}><input value={item.name} onChange={(event) => updateGroupCost(set, item.id, { name: event.target.value })} /><input type="number" min="0" value={item.price || ""} placeholder="0" onChange={(event) => updateGroupCost(set, item.id, { price: asNumber(Number(event.target.value)) })} /><span>{item.mode === "perGroup" ? "／团" : "／人"}</span><input className="count" type="number" min="1" value={item.count} onChange={(event) => updateGroupCost(set, item.id, { count: Math.max(1, asNumber(Number(event.target.value), 1)) })} /><span>{item.mode === "perGroup" ? "份" : "项"}</span><button type="button" className="remove" onClick={() => set((current) => current.filter((line) => line.id !== item.id))}>×</button></div>)}<button className="add-inline" type="button" onClick={() => set((current) => [...current, { id: uid(), name: defaultName, price: 0, count: 1, mode: "perGroup" }])}>＋</button></>;
 
   return <main className="compact-quote">

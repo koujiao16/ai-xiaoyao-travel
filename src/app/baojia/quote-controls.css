@@ -5,7 +5,7 @@
 .quote-result button{background:#9e4738;color:white}
 .itinerary-summary .itinerary-title{flex:1;min-width:10em}
 .itinerary-summary .day-count+.day-count{margin-left:0}
-.compact-quote .itinerary-summary textarea{color-scheme:light;background:#fffdf9;color:#302a25;border:1px solid #d7cbbd;border-radius:9px;line-height:1.55}
+.compact-quote .itinerary-summary textarea{color-scheme:light;background:#fffdf9;color:#302a25;border:1px solid #d7cbbd;border-radius:9px;line-height:1.35}
 .itinerary-summary .itinerary-day{row-gap:4px;margin:6px 0}
 .itinerary-summary .itinerary-day .itinerary-editor,.itinerary-summary .itinerary-tags{margin-bottom:0}
 .itinerary-summary .daily-options{gap:5px}
