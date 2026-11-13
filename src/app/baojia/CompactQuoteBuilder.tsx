@@ -21,7 +21,10 @@ const uid = () => `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 const money = new Intl.NumberFormat("zh-CN", { style: "currency", currency: "CNY", maximumFractionDigits: 2 });
 const excludedFromCost = /(机场|接机|送机|接站|送站|高铁)/;
 const asNumber = (value: number, fallback = 0) => Number.isFinite(value) ? Math.max(0, value) : fallback;
-const vehicleLabel = (item: DraftItem) => item.province === "河南" ? "河南用车" : `${item.city || item.province || "当地"}用车`;
+const vehicleLabel = (item: DraftItem) => {
+  const area = (item.province || "").trim().replace(/(?:壮族自治区|回族自治区|维吾尔自治区|自治区|特别行政区|省|市)$/, "");
+  return area ? (area === "陕西" ? "西安车" : area + "车") : "";
+};
 
 function sectionTotal(items: PriceItem[], travelers: number) {
   return items.filter((item) => item.selected).reduce((sum, item) => sum + item.price * (item.mode === "perGroup" ? 1 : travelers), 0);
@@ -70,7 +73,7 @@ export function CompactQuoteBuilder({ library }: { library: LibraryItem[] }) {
       (draft.lodgings || []).forEach(({ name, day }) => { importedDetails[day] = { meals: [], lodging: name }; });
       setDayDetails(draft.details || importedDetails);
       setHotels([...hotelNights.entries()].map(([name, nights]) => ({ id: uid(), name, roomRate: 0, rooms: Math.ceil(20 / 2), nights })));
-      setVehicles([...new Set(sourceItems.filter((item) => item.kind !== "服务" && item.city).map(vehicleLabel))].map((name) => ({ id: uid(), name, price: 0, count: 1, mode: "perGroup" })));
+      setVehicles([...new Set(sourceItems.filter((item) => item.kind !== "服务" ).map(vehicleLabel).filter(Boolean))].map((name) => ({ id: uid(), name, price: 0, count: 1, mode: "perGroup" })));
     } catch {
       // The blank version stays usable when a browser draft is incomplete.
     } finally {
@@ -101,7 +104,7 @@ export function CompactQuoteBuilder({ library }: { library: LibraryItem[] }) {
       setTickets((current) => [...current, ...mapped.filter((entry) => entry.group === "ticket")]);
       setExtras((current) => [...current, ...mapped.filter((entry) => entry.group === "extra")]);
     }
-    if (item.kind !== "服务" && item.city) {
+    if (item.kind !== "服务" && vehicleLabel(item)) {
       const name = vehicleLabel(item);
       setVehicles((current) => current.some((vehicle) => vehicle.name === name) ? current : [...current, { id: uid(), name, price: 0, count: 1, mode: "perGroup" }]);
     }
@@ -147,7 +150,7 @@ export function CompactQuoteBuilder({ library }: { library: LibraryItem[] }) {
       const itineraryRows = Array.from({ length: dayCount }, (_, index) => {
         const day = index + 1;
         const detail = dayDetails[day] || { meals: [], lodging: "" };
-        return new TableRow({ children: [cell(`D${day}`, 850, true), cell(itinerary.filter((item) => item.day === day).map((item) => item.name).join(" · "), 5100), cell(detail.meals.join("、"), 1800), cell(detail.lodging, 2250)] });
+        return new TableRow({ children: [cell(`D${day}`, 850, true), cell(itinerary.filter((item) => item.day === day).map((item) => item.name).join(" · "), 5100), cell(["早餐","中餐","晚餐"].filter(m => detail.meals.includes(m)).map(m => m[0]).join("、"), 1800), cell(detail.lodging, 2250)] });
       });
       const perPersonText = (amount: number) => `${money.format(amount / Math.max(1, travelers))}/人`;
       const selected = (items: PriceItem[]) => items.filter((item) => item.selected).map((item) => `${item.name} ${item.price}${item.mode === "perGroup" ? "/团" : "/人"}`).join("  ·  ");
@@ -209,7 +212,7 @@ export function CompactQuoteBuilder({ library }: { library: LibraryItem[] }) {
       <div><span>简版行程</span><input className="itinerary-title" value={title} onChange={(event) => setTitle(event.target.value)} /><label className="day-count">天数<input type="number" min="1" max="15" value={dayCount} onChange={(event) => setDayCount(Math.max(1, Math.min(15, asNumber(Number(event.target.value), 1))))} /></label><label className="day-count">核算人数<input type="number" min="1" value={travelers} onChange={(event) => setTravelers(Math.max(1, asNumber(Number(event.target.value), 1)))} /></label></div>
       {Array.from({ length: dayCount }, (_, index) => index + 1).map((day) => {
         const suggestions = suggestionsFor(day);
-        return <div className="itinerary-day" key={day}><b>D{day}</b><div className="itinerary-editor"><div className="itinerary-tags">{itinerary.filter((item) => item.day === day).map((item) => <span key={item.quoteKey}>{item.name}<button type="button" onClick={() => removeProject(item.quoteKey)}>×</button></span>)}</div><input value={queries[day] || ""} placeholder="输入景区或服务关键词" onChange={(event) => setQueries((current) => ({ ...current, [day]: event.target.value }))} />{suggestions.length ? <div className="itinerary-suggestions">{suggestions.map((item) => <button type="button" key={item.id} onClick={() => addProject(day, item)}>{item.name}</button>)}</div> : null}</div><section className="daily-options">{["早餐","中餐","晚餐"].map(m => <button type="button" key={m} aria-pressed={dayDetails[day]?.meals.includes(m) || false} onClick={() => toggleMeal(day,m)}>{m}</button>)}<label>住宿 <input list={`cities-${day}`} placeholder="城市或酒店" value={dayDetails[day]?.lodging || ""} onChange={e => { setLodging(day,e.target.value); setLodgingQueries(q => ({...q,[day]:e.target.value})); }} /></label><datalist id={`cities-${day}`}>{(lodgingQueries[day] ? lodgingSuggestions(day) : cities).map(c => <option key={c} value={c}/>)}</datalist></section></div>;
+        return <div className="itinerary-day" key={day}><b>D{day}</b><div className="itinerary-editor"><div className="itinerary-tags">{itinerary.filter((item) => item.day === day).map((item) => <span key={item.quoteKey}>{item.name}<button type="button" onClick={() => removeProject(item.quoteKey)}>×</button></span>)}</div><input value={queries[day] || ""} placeholder="输入景区或服务关键词" onChange={(event) => setQueries((current) => ({ ...current, [day]: event.target.value }))} />{suggestions.length ? <div className="itinerary-suggestions">{suggestions.map((item) => <button type="button" key={item.id} onClick={() => addProject(day, item)}>{item.name}</button>)}</div> : null}</div><section className="daily-options">{["早餐","中餐","晚餐"].map(m => <button type="button" key={m} aria-pressed={dayDetails[day]?.meals.includes(m) || false} onClick={() => toggleMeal(day,m)}>{m[0]}</button>)}<label>住宿 <input list={`cities-${day}`} placeholder="城市或酒店" value={dayDetails[day]?.lodging || ""} onChange={e => { setLodging(day,e.target.value); setLodgingQueries(q => ({...q,[day]:e.target.value})); }} /></label><datalist id={`cities-${day}`}>{(lodgingQueries[day] ? lodgingSuggestions(day) : cities).map(c => <option key={c} value={c}/>)}</datalist></section></div>;
       })}
     </section>
     <section className="quote-sheet">
