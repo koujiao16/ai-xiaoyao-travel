@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { effectiveQuotePrice, quotePriceCatalog, type QuotePriceItem, type QuotePriceGroup, type QuotePriceMode } from "@/lib/xingcheng/quote-pricing";
 import type { LibraryItem } from "@/lib/xingcheng/types";
+import { createCustomProject, isCustomProject } from "@/lib/xingcheng/custom-project";
 import "./compact-quote.css";
 import "./compact-itinerary.css";
 import "./quote-controls.css";
@@ -61,8 +62,8 @@ export function CompactQuoteBuilder({ library }: { library: LibraryItem[] }) {
       setItinerary(sourceItems);
       setDayCount(Math.max(1, ...sourceItems.map((item) => item.day), ...Object.keys(draft.details || {}).map(Number)));
       setTitle(draft.tripName ? `${draft.tripName}报价` : "行程报价");
-      const prices = sourceItems.filter((item) => !excludedFromCost.test(item.name)).flatMap((item) => {
-        const known = quotePriceCatalog[item.name] || [{ name: item.name, price: 0, group: "ticket" as const, mode: "perPerson" as const, selected: true }];
+      const prices = sourceItems.filter((item) => isCustomProject(item) || !excludedFromCost.test(item.name)).flatMap((item) => {
+        const known = (!isCustomProject(item) && quotePriceCatalog[item.name]) || [{ name: item.name, price: 0, group: "ticket" as const, mode: "perPerson" as const, selected: true }];
         return known.map((entry) => ({ id: uid(), ...entry, locked: true, sourceKey: item.quoteKey }));
       });
       setTickets(prices.filter((item) => item.group === "ticket"));
@@ -98,8 +99,8 @@ export function CompactQuoteBuilder({ library }: { library: LibraryItem[] }) {
     };
     setItinerary((current) => [...current, item]);
     setQueries((current) => ({ ...current, [day]: "" }));
-    if (!excludedFromCost.test(item.name)) {
-      const charges = quotePriceCatalog[item.name] || [{ name: item.name, price: 0, group: "ticket" as const, mode: "perPerson" as const, selected: true }];
+    if (isCustomProject(item) || !excludedFromCost.test(item.name)) {
+      const charges = (!isCustomProject(item) && quotePriceCatalog[item.name]) || [{ name: item.name, price: 0, group: "ticket" as const, mode: "perPerson" as const, selected: true }];
       const mapped = charges.map((entry) => ({ id: uid(), ...entry, locked: true, sourceKey: item.quoteKey }));
       setTickets((current) => [...current, ...mapped.filter((entry) => entry.group === "ticket")]);
       setExtras((current) => [...current, ...mapped.filter((entry) => entry.group === "extra")]);
@@ -108,6 +109,11 @@ export function CompactQuoteBuilder({ library }: { library: LibraryItem[] }) {
       const name = vehicleLabel(item);
       setVehicles((current) => current.some((vehicle) => vehicle.name === name) ? current : [...current, { id: uid(), name, price: 0, count: 1, mode: "perGroup" }]);
     }
+  };
+
+  const addCustomProject = (day: number) => {
+    const candidate = createCustomProject(queries[day] || "");
+    if (candidate) addProject(day, candidate);
   };
 
   const removeProject = (quoteKey: string) => {
@@ -212,7 +218,7 @@ export function CompactQuoteBuilder({ library }: { library: LibraryItem[] }) {
       <div><span>简版行程</span><input className="itinerary-title" value={title} onChange={(event) => setTitle(event.target.value)} /><label className="day-count">天数<input type="number" min="1" max="15" value={dayCount} onChange={(event) => setDayCount(Math.max(1, Math.min(15, asNumber(Number(event.target.value), 1))))} /></label><label className="day-count">核算人数<input type="number" min="1" value={travelers} onChange={(event) => setTravelers(Math.max(1, asNumber(Number(event.target.value), 1)))} /></label></div>
       {Array.from({ length: dayCount }, (_, index) => index + 1).map((day) => {
         const suggestions = suggestionsFor(day);
-        return <div className="itinerary-day" key={day}><b>D{day}</b><div className="itinerary-editor"><div className="itinerary-tags">{itinerary.filter((item) => item.day === day).map((item) => <span key={item.quoteKey}>{item.name}<button type="button" onClick={() => removeProject(item.quoteKey)}>×</button></span>)}</div><input value={queries[day] || ""} placeholder="输入景区或服务关键词" onChange={(event) => setQueries((current) => ({ ...current, [day]: event.target.value }))} />{suggestions.length ? <div className="itinerary-suggestions">{suggestions.map((item) => <button type="button" key={item.id} onClick={() => addProject(day, item)}>{item.name}</button>)}</div> : null}</div><section className="daily-options">{["早餐","中餐","晚餐"].map(m => <button type="button" key={m} aria-pressed={dayDetails[day]?.meals.includes(m) || false} onClick={() => toggleMeal(day,m)}>{m[0]}</button>)}<label>住宿 <input list={`cities-${day}`} placeholder="城市或酒店" value={dayDetails[day]?.lodging || ""} onChange={e => { setLodging(day,e.target.value); setLodgingQueries(q => ({...q,[day]:e.target.value})); }} /></label><datalist id={`cities-${day}`}>{(lodgingQueries[day] ? lodgingSuggestions(day) : cities).map(c => <option key={c} value={c}/>)}</datalist></section></div>;
+        return <div className="itinerary-day" key={day}><b>D{day}</b><div className="itinerary-editor"><div className="itinerary-tags">{itinerary.filter((item) => item.day === day).map((item) => <span key={item.quoteKey}>{item.name}<button type="button" onClick={() => removeProject(item.quoteKey)}>×</button></span>)}</div><input value={queries[day] || ""} aria-label={`D${day}项目名称或关键词`} placeholder="输入关键词，或填写自定义项目名称" onChange={(event) => setQueries((current) => ({ ...current, [day]: event.target.value }))} /><button className="custom-project-add" type="button" disabled={!(queries[day] || "").trim()} onClick={() => addCustomProject(day)}>＋自定义项目</button>{suggestions.length ? <div className="itinerary-suggestions">{suggestions.map((item) => <button type="button" key={item.id} onClick={() => addProject(day, item)}>{item.name}</button>)}</div> : null}</div><section className="daily-options">{["早餐","中餐","晚餐"].map(m => <button type="button" key={m} aria-pressed={dayDetails[day]?.meals.includes(m) || false} onClick={() => toggleMeal(day,m)}>{m[0]}</button>)}<label>住宿 <input list={`cities-${day}`} placeholder="城市或酒店" value={dayDetails[day]?.lodging || ""} onChange={e => { setLodging(day,e.target.value); setLodgingQueries(q => ({...q,[day]:e.target.value})); }} /></label><datalist id={`cities-${day}`}>{(lodgingQueries[day] ? lodgingSuggestions(day) : cities).map(c => <option key={c} value={c}/>)}</datalist></section></div>;
       })}
     </section>
     <section className="quote-sheet">

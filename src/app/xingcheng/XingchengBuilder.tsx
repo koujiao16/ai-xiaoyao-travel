@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useRef, useState } from "react";
 import type { LibraryItem } from "@/lib/xingcheng/types";
+import { createCustomProject, isCustomProject } from "@/lib/xingcheng/custom-project";
 import {
   ALL_TRAVEL_REGIONS,
   resolveTravelRegion,
@@ -43,7 +44,8 @@ type Props = {
 export function XingchengBuilder({ library, lodgingOptions, dataSource = "local" }: Props) {
   const [tripName, setTripName] = useState("西安华山3日游");
   const [selectedRegion, setSelectedRegion] = useState<TravelRegionFilter>(ALL_TRAVEL_REGIONS);
-  const safeLibrary = useMemo(() => (library.length ? library : []), [library]);
+  const [customProjects, setCustomProjects] = useState<LibraryItem[]>([]);
+  const safeLibrary = useMemo(() => [...library, ...customProjects], [library, customProjects]);
   const safeLodging = useMemo(
     () => (lodgingOptions.length ? lodgingOptions : [NO_LODGING_LABEL]),
     [lodgingOptions],
@@ -54,6 +56,7 @@ export function XingchengBuilder({ library, lodgingOptions, dataSource = "local"
         (item) =>
           selectedRegion === ALL_TRAVEL_REGIONS ||
           item.kind === "服务" ||
+          isCustomProject(item) ||
           resolveTravelRegion(item) === selectedRegion,
       ),
     [safeLibrary, selectedRegion],
@@ -115,6 +118,13 @@ export function XingchengBuilder({ library, lodgingOptions, dataSource = "local"
 
   const addItem = (day: DayPlan, itemId: string) => {
     updateDay(day.id, { items: [...day.items, itemId], query: "", touched: false });
+  };
+
+  const addCustomItem = (day: DayPlan) => {
+    const item = createCustomProject(day.query);
+    if (!item) return;
+    setCustomProjects((current) => [...current, item]);
+    addItem(day, item.id);
   };
 
   const removeItem = (day: DayPlan, itemId: string) => {
@@ -745,8 +755,9 @@ export function XingchengBuilder({ library, lodgingOptions, dataSource = "local"
                       onBlur={() => {
                         if (day.query.trim() || day.items.length === 0) updateDay(day.id, { touched: true });
                       }}
-                      placeholder="输入项目关键词，例如：城墙、华山、接机"
+                      placeholder="输入关键词，或填写自定义项目名称"
                     />
+                    <button className="custom-project-add" type="button" disabled={!day.query.trim()} onMouseDown={(event) => event.preventDefault()} onClick={() => addCustomItem(day)}>＋自定义项目</button>
                     {day.query.trim() && (
                       <div className="suggestions" role="listbox">
                         {suggestions.length ? suggestions.map((item) => (
@@ -766,7 +777,7 @@ export function XingchengBuilder({ library, lodgingOptions, dataSource = "local"
                       </div>
                     )}
                   </div>
-                  {invalid && <p className="error-note">请从联想结果中选择项目</p>}
+                  {invalid && <p className="error-note">请从联想结果中选择，或点击“＋自定义项目”</p>}
 
                   <div className="day-options">
                     <fieldset>

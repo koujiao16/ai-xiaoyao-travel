@@ -11,4 +11,6 @@
 .itinerary-summary .itinerary-day .itinerary-editor,.itinerary-summary .itinerary-tags{margin-bottom:0}
 .itinerary-summary .daily-options{gap:5px}
 .daily-options button{padding:3px 10px;min-height:29px}
+.compact-quote .custom-project-add{flex:none;border:1px dashed #bda995;border-radius:6px;background:#fffaf5;color:#8e4436;padding:5px 8px;font-size:12px;cursor:pointer}
+.compact-quote .custom-project-add:disabled{opacity:.45;cursor:default}
 .itinerary-summary .daily-options input{height:30px}

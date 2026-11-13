@@ -1,6 +1,14 @@
 import assert from "node:assert/strict";
 import { effectiveQuotePrice, quotePriceCatalog } from "../src/lib/xingcheng/quote-pricing";
 import { baseLibrary } from "../src/data/xingcheng/library";
+import { createCustomProject, isCustomProject } from "../src/lib/xingcheng/custom-project";
+
+assert.equal(createCustomProject("   "), null);
+const custom = createCustomProject("  特殊景区  ")!;
+assert.equal(custom.name, "特殊景区");
+assert.ok(isCustomProject(custom));
+assert.notEqual(custom.id, createCustomProject("特殊景区")!.id);
+assert.ok(!isCustomProject({ id: "terracotta" }));
 
 const museum = quotePriceCatalog["秦始皇兵马俑博物馆"];
 assert.equal(museum.find(x => x.group === "ticket")?.price, 120);

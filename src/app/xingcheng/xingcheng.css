@@ -397,3 +397,6 @@ main.trip-builder { min-height: 100vh; padding-bottom: 9rem; }
   .trip-builder .action-bar > button { padding: 0 16px; }
 }
 
+.trip-builder .custom-project-add{flex:none;border:1px dashed #bda995;border-radius:6px;background:#fffaf5;color:#8e4436;padding:6px 9px;font-size:12px;cursor:pointer}
+.trip-builder .custom-project-add:disabled{opacity:.45;cursor:default}
+
