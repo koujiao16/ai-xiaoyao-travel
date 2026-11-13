@@ -11,6 +11,30 @@ export const routeName = (item?: LibraryItem | null) => {
 
 export const baseLibrary: LibraryItem[] = [
   {
+    id: "xingqing-palace",
+    name: "兴庆宫",
+    keywords: ["兴庆宫", "兴庆宫公园", "西安兴庆宫", "唐文化"],
+    province: "陕西",
+    city: "西安",
+    region: "西安",
+    category: "历史文化",
+    duration: "约1—2小时",
+    description: "兴庆宫公园依托唐兴庆宫遗址而建，将唐代宫廷历史与城市园林景观融为一体。园内湖水、亭台与绿地相映，适合沿湖漫步、赏花休憩，在游览中了解唐代长安的历史风貌。具体参观点及开放安排以园区实际情况为准。",
+    kind: "景点",
+  },
+  {
+    id: "henan-swan-lake",
+    name: "天鹅湖",
+    keywords: ["天鹅湖", "三门峡天鹅湖", "天鹅湖国家城市湿地公园", "白天鹅", "观鸟"],
+    province: "河南",
+    city: "三门峡",
+    region: "三门峡",
+    category: "自然风光",
+    duration: "约1—2小时",
+    description: "三门峡天鹅湖以黄河沿岸湿地生态和白天鹅观赏为特色，是感受黄河风光、开展自然观察的游览点。沿湿地步道可欣赏水面、滩地与候鸟相映的景观；白天鹅观赏具有季节性，实际数量与观赏效果受迁徙和天气影响。游览时应遵守观鸟规定，避免惊扰鸟类。",
+    kind: "景点",
+  },
+  {
     id: "terracotta-diy",
     name: "兵马俑DIY",
     keywords: ["兵马俑DIY", "兵马俑制作", "制作兵马俑", "陶俑制作", "DIY"],
