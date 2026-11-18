@@ -4,6 +4,11 @@
 .daily-options button,.quote-result button{border:1px solid #c4b8ab;border-radius:8px;padding:6px 12px}
 .daily-options button[aria-pressed=true]{background:#54745e;color:white}
 .quote-result button{background:#9e4738;color:white}
+.compact-quote .quote-help{font-size:11px;line-height:1.6;color:#8b8178;margin:0 0 8px;font-weight:400}
+.compact-quote .cost-help-wrap{width:100%}
+.compact-quote .billing-mode{position:relative;z-index:2;padding:3px 5px;border:1px dashed #cbbbac;border-radius:4px;background:#fffdf9;color:#8e4436;font:inherit;font-size:12px;white-space:nowrap;cursor:pointer}
+.compact-quote .billing-mode:hover{background:#f4e8df;border-color:#9e4738}
+.compact-quote .cost-category-title{width:100%;min-width:0;padding:0 3px;height:32px;text-align:center;font-size:14px;font-weight:600;color:#9e4738;border:1px dashed #cbbbac;background:transparent}
 .quote-result .quote-export-actions{display:flex;flex-direction:row;align-items:center;gap:7px;margin:0;flex:none}
 .quote-result .quote-export-actions button{height:32px;padding:0 12px;border-radius:7px;font-size:12px;line-height:1;white-space:nowrap;cursor:pointer;transition:all .15s ease}
 .quote-result .quote-export-actions button:first-child{background:#9e4738;border-color:#b85b49}

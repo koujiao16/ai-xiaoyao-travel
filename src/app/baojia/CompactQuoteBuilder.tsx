@@ -34,7 +34,7 @@ function sectionTotal(items: PriceItem[], travelers: number) {
 
 // Keep the row component stable: declaring it inside the builder remounts
 // every input on each keystroke, losing focus while entering multi-digit prices.
-const CostRow = ({ title: rowTitle, children, total, travelers }: { title: string; children: React.ReactNode; total: number; travelers: number }) => <section className="compact-row"><h2>{rowTitle}</h2><div className="compact-row-body">{children}</div><strong className="compact-row-total">{money.format(total)}<small>／人 {money.format(total / Math.max(1, travelers))}</small></strong></section>;
+const CostRow = ({ title: rowTitle, children, total, travelers }: { title: React.ReactNode; children: React.ReactNode; total: number; travelers: number }) => <section className="compact-row"><h2>{rowTitle}</h2><div className="compact-row-body">{children}</div><strong className="compact-row-total">{money.format(total)}<small>／人 {money.format(total / Math.max(1, travelers))}</small></strong></section>;
 
 export function CompactQuoteBuilder({ library }: { library: LibraryItem[] }) {
   const [title, setTitle] = useState("定制行程报价");
@@ -52,6 +52,8 @@ export function CompactQuoteBuilder({ library }: { library: LibraryItem[] }) {
   const [meals, setMeals] = useState<Meal[]>([{ id: uid(), name: "团餐", price: 0, count: 1 }]);
   const [vehicles, setVehicles] = useState<GroupCost[]>([]);
   const [guides, setGuides] = useState<GroupCost[]>([{ id: uid(), name: "中文导游", price: 0, count: 1, mode: "perGroup" }]);
+  const [leaderTitle, setLeaderTitle] = useState("领队费用");
+  const [leaderCosts, setLeaderCosts] = useState<GroupCost[]>([]);
   const [misc, setMisc] = useState<GroupCost[]>([
     { id: uid(), name: "水和保险", price: 0, count: 1, mode: "perPerson" },
     { id: uid(), name: "按团杂项", price: 0, count: 1, mode: "perGroup" },
@@ -71,7 +73,7 @@ export function CompactQuoteBuilder({ library }: { library: LibraryItem[] }) {
         return known.map((entry) => ({ id: uid(), ...entry, locked: true, sourceKey: item.quoteKey }));
       });
       setTickets(prices.filter((item) => item.group === "ticket"));
-      setExtras(prices.filter((item) => item.group === "extra"));
+      setExtras(prices.filter((item) => item.group === "extra").map(item => ({ ...item, selected: true })));
       const hotelNights = new Map<string, number>();
       (draft.lodgings || []).forEach(({ name }) => hotelNights.set(name, (hotelNights.get(name) || 0) + 1));
       const importedDetails: Record<number, DayDetails> = {};
@@ -107,7 +109,7 @@ export function CompactQuoteBuilder({ library }: { library: LibraryItem[] }) {
       const charges = getProjectQuotePrices(item);
       const mapped = charges.map((entry) => ({ id: uid(), ...entry, locked: true, sourceKey: item.quoteKey }));
       setTickets((current) => [...current, ...mapped.filter((entry) => entry.group === "ticket")]);
-      setExtras((current) => [...current, ...mapped.filter((entry) => entry.group === "extra")]);
+      setExtras((current) => [...current, ...mapped.filter((entry) => entry.group === "extra").map(entry => ({ ...entry, selected: true }))]);
     }
     if (item.kind !== "服务" && vehicleLabel(item)) {
       const name = vehicleLabel(item);
@@ -160,12 +162,13 @@ export function CompactQuoteBuilder({ library }: { library: LibraryItem[] }) {
       const selected = (items: PriceItem[]) => items.filter((item) => item.selected && !isKnownFreeTicket(item)).map((item) => item.pricePending ? `${item.name} 待填价` : `${item.name} ${effectiveQuotePrice(item, travelers)}${item.mode === "perGroup" ? "/团" : "/人"}`).join("  ·  ");
       const costs: Array<[string, string, string]> = [
         ["门票", selected(tickets), perPersonText(totals.ticket)],
-        ["讲解及配套", selected(extras), perPersonText(totals.extra)],
+        ["讲解及配套", selected(extras.map(item => ({ ...item, selected: true }))), perPersonText(totals.extra)],
         ["住宿", hotels.map((item) => `${item.name} ${item.roomRate}/间/晚 × ${item.rooms}间 × ${item.nights}晚`).join("  ·  "), perPersonText(totals.hotel)],
         ["餐", meals.map((item) => `${item.name} ${item.price}/人 × ${item.count}餐`).join("  ·  "), perPersonText(totals.meal)],
         ["用车", vehicles.map((item) => `${item.name} ${item.price}/团 × ${item.count}`).join("  ·  "), perPersonText(totals.vehicle)],
         ["导游", guides.map((item) => `${item.name} ${item.price}${item.mode === "perGroup" ? "/团" : "/人"} × ${item.count}`).join("  ·  "), perPersonText(totals.guide)],
         ["杂项", misc.map((item) => `${item.name} ${item.price}${item.mode === "perGroup" ? "/团" : "/人"} × ${item.count}`).join("  ·  "), perPersonText(totals.other)],
+        [leaderTitle || "领队费用", leaderCosts.map(item => `${item.name} ${item.price}${item.mode === "perGroup" ? "/团" : "/人"} × ${item.count}`).join(" · "), perPersonText(totals.leader)],
         ["共计", `${travelers} 人核算`, `${money.format(totals.perPerson)}/人`],
       ];
       const doc = new Document({ sections: [{ properties: { page: { margin: { top: 850, bottom: 850, left: 850, right: 850 } } }, children: [
@@ -202,12 +205,13 @@ export function CompactQuoteBuilder({ library }: { library: LibraryItem[] }) {
       const noticeLines = remarks.split("\n").filter(Boolean);
       const simpleRows: Array<[string, string]> = [
         ["门票", names(tickets)],
-        ["讲解及配套", names(extras)],
+        ["讲解及配套", names(extras.map(item => ({ ...item, selected: true })))],
         ["住宿", hotels.map(item => `${item.name || "参考酒店"}（${item.nights}晚）`).join("、") || "按最终确认安排"],
         ["餐食", meals.map(item => item.name).join("、") || "不含，客人自理"],
         ["用车", vehicles.map(item => item.name).join("、") || "按行程安排"],
         ["导游", guides.map(item => item.name).join("、") || "按行程安排"],
         ["杂项", misc.map(item => item.name).join("、") || "按报价备注执行"],
+        ...(leaderCosts.length ? [[leaderTitle || "领队费用", leaderCosts.map(item => item.name).join("、")] as [string, string]] : []),
       ];
       const heading = (text: string) => new Paragraph({ spacing: { before: 150, after: 70 }, children: [new TextRun({ text, bold: true, color: "8B3E2F", size: 24 })] });
       const doc = new Document({ sections: [{ properties: { page: { margin: { top: 850, bottom: 850, left: 1000, right: 1000 } } }, children: [
@@ -228,22 +232,23 @@ export function CompactQuoteBuilder({ library }: { library: LibraryItem[] }) {
 
   const totals = useMemo(() => {
     const ticket = sectionTotal(tickets, travelers);
-    const extra = sectionTotal(extras, travelers);
+    const extra = sectionTotal(extras.map(item => ({ ...item, selected: true })), travelers);
     const hotel = hotels.reduce((sum, item) => sum + item.roomRate * item.rooms * item.nights, 0);
     const meal = meals.reduce((sum, item) => sum + item.price * item.count * travelers, 0);
     const groupTotal = (items: GroupCost[]) => items.reduce((sum, item) => sum + item.price * item.count * (item.mode === "perPerson" ? travelers : 1), 0);
     const vehicle = groupTotal(vehicles);
     const guide = groupTotal(guides);
     const other = groupTotal(misc);
-    const total = ticket + extra + hotel + meal + vehicle + guide + other;
-    return { ticket, extra, hotel, meal, vehicle, guide, other, total, perPerson: total / Math.max(1, travelers) };
-  }, [tickets, extras, hotels, meals, vehicles, guides, misc, travelers]);
+    const leader = groupTotal(leaderCosts);
+    const total = ticket + extra + hotel + meal + vehicle + guide + other + leader;
+    return { ticket, extra, hotel, meal, vehicle, guide, other, leader, total, perPerson: total / Math.max(1, travelers) };
+  }, [tickets, extras, hotels, meals, vehicles, guides, misc, leaderCosts, travelers]);
 
   const pricePills = (items: PriceItem[], set: React.Dispatch<React.SetStateAction<PriceItem[]>>, group: QuotePriceGroup) => <>
-    {items.map((item) => <div className={`price-pill ${item.selected ? "selected" : ""}`} key={item.id}>
-      <button className="price-pill-toggle" type="button" aria-label={`计入报价：${item.name}`} aria-pressed={item.selected} onClick={() => updatePrice(set, item.id, { selected: !item.selected })}>
+    {items.map((item) => <div className={`price-pill ${group === "ticket" && item.selected ? "selected" : ""}`} key={item.id}>
+      {group === "ticket" && <button className="price-pill-toggle" type="button" aria-label={`计入报价：${item.name}`} aria-pressed={item.selected} onClick={() => updatePrice(set, item.id, { selected: !item.selected })}>
         <span className="price-pill-toggle-label">切换是否计入报价</span>
-      </button>
+      </button>}
       <input aria-label="项目名称" tabIndex={item.locked ? -1 : undefined} readOnly={item.locked} value={item.name} onChange={(event) => updatePrice(set, item.id, { name: event.target.value })} />
       <input aria-label="价格" type="number" min="0" value={item.pricePending ? "" : item.price} placeholder="待填价" onChange={(event) => updatePrice(set, item.id, { price: asNumber(Number(event.target.value)), pricePending: event.target.value === "" })} onBlur={(event) => {
         if (item.group === "ticket" && event.target.value.trim() !== "" && Number(event.target.value) === 0) {
@@ -251,17 +256,19 @@ export function CompactQuoteBuilder({ library }: { library: LibraryItem[] }) {
           setMessage(`${item.name}门票已确认0元，不列入门票；行程与配套保留。`);
         }
       }} />
-      <span title={item.includedPeople ? `含${item.includedPeople}人，超出每人加${item.additionalPersonPrice}元` : undefined}>{item.mode === "perGroup" ? "／团" : "／人"}{item.includedPeople ? `（含${item.includedPeople}人，超员+${item.additionalPersonPrice}/人；现${effectiveQuotePrice(item, travelers)}元）` : ""}</span>
+      {group === "extra" ? <button type="button" className="billing-mode" title="点击切换按人或按团计费" onClick={() => updatePrice(set, item.id, { mode: item.mode === "perGroup" ? "perPerson" : "perGroup", includedPeople: undefined, additionalPersonPrice: undefined })}>{item.mode === "perGroup" ? "／团" : "／人"}</button> : <span title={item.includedPeople ? `含${item.includedPeople}人，超出每人加${item.additionalPersonPrice}元` : undefined}>{item.mode === "perGroup" ? "／团" : "／人"}{item.includedPeople ? `（含${item.includedPeople}人，超员+${item.additionalPersonPrice}/人；现${effectiveQuotePrice(item, travelers)}元）` : ""}</span>}
+      {group === "extra" && item.includedPeople ? <span>含{item.includedPeople}人，超员＋{item.additionalPersonPrice}/人；现{effectiveQuotePrice(item, travelers)}元</span> : null}
       <button className="remove" type="button" aria-label={`删除费用：${item.name}`} onClick={() => set((current) => current.filter((line) => line.id !== item.id))}>×</button>
     </div>)}
     <button className="add-inline" type="button" onClick={() => set((current) => [...current, { id: uid(), name: group === "ticket" ? "新增门票" : "新增配套", price: 0, pricePending: true, mode: "perPerson", group, selected: true, locked: false }])}>＋</button>
   </>;
-  const groupFields = (items: GroupCost[], set: React.Dispatch<React.SetStateAction<GroupCost[]>>, defaultName: string) => <>{items.map((item) => <div className="cost-inline" key={item.id}><input value={item.name} onChange={(event) => updateGroupCost(set, item.id, { name: event.target.value })} /><input type="number" min="0" value={item.price || ""} placeholder="0" onChange={(event) => updateGroupCost(set, item.id, { price: asNumber(Number(event.target.value)) })} /><span>{item.mode === "perGroup" ? "／团" : "／人"}</span><input className="count" type="number" min="1" value={item.count} onChange={(event) => updateGroupCost(set, item.id, { count: Math.max(1, asNumber(Number(event.target.value), 1)) })} /><span>{item.mode === "perGroup" ? "份" : "项"}</span><button type="button" className="remove" onClick={() => set((current) => current.filter((line) => line.id !== item.id))}>×</button></div>)}<button className="add-inline" type="button" onClick={() => set((current) => [...current, { id: uid(), name: defaultName, price: 0, count: 1, mode: "perGroup" }])}>＋</button></>;
+  const groupFields = (items: GroupCost[], set: React.Dispatch<React.SetStateAction<GroupCost[]>>, defaultName: string) => <>{items.map((item) => <div className="cost-inline" key={item.id}><input value={item.name} onChange={(event) => updateGroupCost(set, item.id, { name: event.target.value })} /><input type="number" min="0" value={item.price || ""} placeholder="0" onChange={(event) => updateGroupCost(set, item.id, { price: asNumber(Number(event.target.value)) })} /><button type="button" className="billing-mode" title="点击切换按人或按团计费" onClick={() => updateGroupCost(set, item.id, { mode: item.mode === "perGroup" ? "perPerson" : "perGroup" })}>{item.mode === "perGroup" ? "／团" : "／人"}</button><input className="count" type="number" min="1" value={item.count} onChange={(event) => updateGroupCost(set, item.id, { count: Math.max(1, asNumber(Number(event.target.value), 1)) })} /><span>{item.mode === "perGroup" ? "份" : "项"}</span><button type="button" className="remove" onClick={() => set((current) => current.filter((line) => line.id !== item.id))}>×</button></div>)}<button className="add-inline" type="button" onClick={() => set((current) => [...current, { id: uid(), name: defaultName, price: 0, count: 1, mode: "perGroup" }])}>＋</button></>;
 
   return <main className="compact-quote">
     <header className="compact-topbar"><Link href="/xingcheng" className="compact-brand"><Image src="/images/branding/ai-xiaoyao-mark.png" alt="爱逍遥" width={40} height={40} /><span><strong>爱逍遥报价工具</strong><small>单团报价核算</small></span></Link><Link href="/xingcheng">返回行程生成器</Link></header>
     <section className="itinerary-summary">
       <div><span>简版行程</span><input className="itinerary-title" value={title} onChange={(event) => setTitle(event.target.value)} /><label className="day-count">天数<input type="number" min="1" max="15" value={dayCount} onChange={(event) => setDayCount(Math.max(1, Math.min(15, asNumber(Number(event.target.value), 1))))} /></label><label className="day-count">核算人数<input type="number" min="1" value={travelers} onChange={(event) => setTravelers(Math.max(1, asNumber(Number(event.target.value), 1)))} /></label></div>
+      <p className="quote-help">先输入景区名称，再选择搜索结果；未收录的项目，输入名称后点击「＋自定义项目」。</p>
       {Array.from({ length: dayCount }, (_, index) => index + 1).map((day) => {
         const suggestions = suggestionsFor(day);
         return <div className="itinerary-day" key={day}><b>D{day}</b><div className="itinerary-editor"><div className="itinerary-tags">{itinerary.filter((item) => item.day === day).map((item) => <span key={item.quoteKey}>{item.name}<button type="button" onClick={() => removeProject(item.quoteKey)}>×</button></span>)}</div><input value={queries[day] || ""} aria-label={`D${day}项目名称或关键词`} placeholder="输入关键词，或填写自定义项目名称" onChange={(event) => setQueries((current) => ({ ...current, [day]: event.target.value }))} /><button className="custom-project-add" type="button" disabled={!(queries[day] || "").trim()} onClick={() => addCustomProject(day)}>＋自定义项目</button>{suggestions.length ? <div className="itinerary-suggestions">{suggestions.map((item) => <button type="button" key={item.id} onClick={() => addProject(day, item)}>{item.name}</button>)}</div> : null}</div><section className="daily-options">{["早餐","中餐","晚餐"].map(m => <button type="button" key={m} aria-pressed={dayDetails[day]?.meals.includes(m) || false} onClick={() => toggleMeal(day,m)}>{m[0]}</button>)}<label>住宿 <LodgingSearch value={dayDetails[day]?.lodging || ""} options={cities} onChange={value => setLodging(day, value)} /></label></section></div>;
@@ -269,12 +276,13 @@ export function CompactQuoteBuilder({ library }: { library: LibraryItem[] }) {
     </section>
     <section className="quote-sheet">
       <CostRow travelers={travelers} title="门票" total={totals.ticket}><div className="pills">{pricePills(tickets, setTickets, "ticket")}</div></CostRow>
-      <CostRow travelers={travelers} title="讲解及配套" total={totals.extra}><div className="pills">{pricePills(extras, setExtras, "extra")}</div></CostRow>
+      <CostRow travelers={travelers} title="讲解及配套" total={totals.extra}><div className="cost-help-wrap"><p className="quote-help">保留即计费，不需要请点 ×；点击「／人」「／团」切换计费。自动关联配套请核对后删减。</p><div className="pills">{pricePills(extras, setExtras, "extra")}</div></div></CostRow>
       <CostRow travelers={travelers} title="住宿" total={totals.hotel}><div className="multi-lines">{hotels.map((hotel) => <div className="hotel-inline" key={hotel.id}><input value={hotel.name} placeholder="酒店名称" onChange={(event) => updateHotel(hotel.id, { name: event.target.value })} /><input type="number" min="0" value={hotel.roomRate || ""} placeholder="房价" onChange={(event) => updateHotel(hotel.id, { roomRate: asNumber(Number(event.target.value)) })} /><span>／间／晚 ×</span><input type="number" min="1" value={hotel.rooms} onChange={(event) => updateHotel(hotel.id, { rooms: Math.max(1, asNumber(Number(event.target.value), 1)) })} /><span>间 ×</span><input type="number" min="1" value={hotel.nights} onChange={(event) => updateHotel(hotel.id, { nights: Math.max(1, asNumber(Number(event.target.value), 1)) })} /><span>晚</span><button className="remove" type="button" onClick={() => setHotels((current) => current.filter((item) => item.id !== hotel.id))}>×</button></div>)}<button className="add-inline" type="button" onClick={() => setHotels((current) => [...current, { id: uid(), name: "", roomRate: 0, rooms: Math.ceil(travelers / 2), nights: 1 }])}>＋</button></div></CostRow>
       <CostRow travelers={travelers} title="餐" total={totals.meal}><div className="multi-lines">{meals.map((meal) => <div className="meal-inline" key={meal.id}><input value={meal.name} onChange={(event) => updateMeal(meal.id, { name: event.target.value })} /><input type="number" min="0" value={meal.price || ""} placeholder="餐标" onChange={(event) => updateMeal(meal.id, { price: asNumber(Number(event.target.value)) })} /><span>／人 ×</span><input type="number" min="1" value={meal.count} onChange={(event) => updateMeal(meal.id, { count: Math.max(1, asNumber(Number(event.target.value), 1)) })} /><span>餐</span><button className="remove" type="button" onClick={() => setMeals((current) => current.filter((item) => item.id !== meal.id))}>×</button></div>)}<button className="add-inline" type="button" onClick={() => setMeals((current) => [...current, { id: uid(), name: "特色餐", price: 0, count: 1 }])}>＋</button></div></CostRow>
       <CostRow travelers={travelers} title="用车" total={totals.vehicle}><div className="multi-lines">{groupFields(vehicles, setVehicles, "新增用车")}</div></CostRow>
       <CostRow travelers={travelers} title="导游" total={totals.guide}><div className="multi-lines">{groupFields(guides, setGuides, "导游服务")}</div></CostRow>
-      <CostRow travelers={travelers} title="杂项" total={totals.other}><div className="multi-lines">{groupFields(misc, setMisc, "新增杂项")}</div></CostRow>
+      <CostRow travelers={travelers} title="杂项" total={totals.other}><div className="cost-help-wrap"><p className="quote-help">保留的项目均计费；点击「／人」「／团」切换，按团费用自动平摊。</p><div className="multi-lines">{groupFields(misc, setMisc, "新增杂项")}</div></div></CostRow>
+      <CostRow travelers={travelers} title={<input className="cost-category-title" aria-label="费用栏目名称" value={leaderTitle} onChange={event => setLeaderTitle(event.target.value)} />} total={totals.leader}><div className="cost-help-wrap"><p className="quote-help">左侧「领队费用」可直接改名；点 ＋ 添加费用，按团金额由核算人数平摊。</p><div className="multi-lines">{groupFields(leaderCosts, setLeaderCosts, "领队费用")}</div></div></CostRow>
     </section>
     <section className="itinerary-summary"><label>报价备注<textarea rows={8} style={{display:"block",width:"100%",padding:12}} value={remarks} onChange={e=>setRemarks(e.target.value)}/></label></section>
     <footer className="quote-result"><div><strong>{title || "未命名报价"}</strong><span>{travelers} 人核算</span></div><div className="quote-export-actions"><button type="button" disabled={exporting} onClick={exportQuote}>详细报价 Word</button><button type="button" disabled={exporting} onClick={exportSimpleQuote}>简版预估报价</button></div><small role="status">{message}</small><div><span>团费合计</span><strong>{money.format(totals.total)}</strong></div><div className="highlight"><span>人均报价</span><strong>{money.format(totals.perPerson)}</strong></div></footer>
