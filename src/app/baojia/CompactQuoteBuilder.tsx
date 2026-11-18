@@ -29,7 +29,7 @@ const vehicleLabel = (item: DraftItem) => {
 };
 
 function sectionTotal(items: PriceItem[], travelers: number) {
-  return items.filter((item) => item.selected).reduce((sum, item) => sum + effectiveQuotePrice(item, travelers) * (item.mode === "perGroup" ? 1 : travelers), 0);
+  return items.reduce((sum, item) => sum + effectiveQuotePrice(item, travelers) * (item.mode === "perGroup" ? 1 : travelers), 0);
 }
 
 // Keep the row component stable: declaring it inside the builder remounts
@@ -160,7 +160,7 @@ export function CompactQuoteBuilder({ library }: { library: LibraryItem[] }) {
         return new TableRow({ children: [cell(`D${day}`, 850, true), cell(itinerary.filter((item) => item.day === day).map((item) => item.name).join(" · "), 5100), cell(["早餐","中餐","晚餐"].filter(m => detail.meals.includes(m)).map(m => m[0]).join("、"), 1800), cell(detail.lodging, 2250)] });
       });
       const perPersonText = (amount: number) => `${money.format(amount / Math.max(1, travelers))}/人`;
-      const selected = (items: PriceItem[]) => items.filter((item) => item.selected && !isKnownFreeTicket(item)).map((item) => item.pricePending ? `${item.name} 待填价` : `${item.name} ${effectiveQuotePrice(item, travelers)}${item.mode === "perGroup" ? "/团" : "/人"}`).join("  ·  ");
+      const selected = (items: PriceItem[]) => items.filter((item) => !isKnownFreeTicket(item)).map((item) => item.pricePending ? `${item.name} 待填价` : `${item.name} ${effectiveQuotePrice(item, travelers)}${item.mode === "perGroup" ? "/团" : "/人"}`).join("  ·  ");
       const costs: Array<[string, string, string]> = [
         ["门票", selected(tickets), perPersonText(totals.ticket)],
         ["讲解及配套", selected(extras.map(item => ({ ...item, selected: true }))), perPersonText(totals.extra)],
@@ -200,7 +200,7 @@ export function CompactQuoteBuilder({ library }: { library: LibraryItem[] }) {
   const copySimpleQuote = async () => {
     setMessage("");
     setCopyFallback("");
-      const names = (items: PriceItem[]) => items.filter(item => item.selected && !isKnownFreeTicket(item)).map(item => item.name).join("、") || "无特别列明项目";
+      const names = (items: PriceItem[]) => items.filter(item => !isKnownFreeTicket(item)).map(item => item.name).join("、") || "无特别列明项目";
       const noticeLines = remarks.split("\n").filter(Boolean);
       const simpleRows: Array<[string, string]> = [
         ["门票", names(tickets)],
@@ -253,10 +253,7 @@ export function CompactQuoteBuilder({ library }: { library: LibraryItem[] }) {
   }, [tickets, extras, hotels, meals, vehicles, guides, misc, leaderCosts, travelers]);
 
   const pricePills = (items: PriceItem[], set: React.Dispatch<React.SetStateAction<PriceItem[]>>, group: QuotePriceGroup) => <>
-    {items.map((item) => <div className={`price-pill ${group === "ticket" && item.selected ? "selected" : ""}`} key={item.id}>
-      {group === "ticket" && <button className="price-pill-toggle" type="button" aria-label={`计入报价：${item.name}`} aria-pressed={item.selected} onClick={() => updatePrice(set, item.id, { selected: !item.selected })}>
-        <span className="price-pill-toggle-label">切换是否计入报价</span>
-      </button>}
+    {items.map((item) => <div className="price-pill" key={item.id}>
       <input aria-label="项目名称" tabIndex={item.locked ? -1 : undefined} readOnly={item.locked} value={item.name} onChange={(event) => updatePrice(set, item.id, { name: event.target.value })} />
       <input aria-label="价格" type="number" min="0" value={item.pricePending ? "" : item.price} placeholder="待填价" onChange={(event) => updatePrice(set, item.id, { price: asNumber(Number(event.target.value)), pricePending: event.target.value === "" })} onBlur={(event) => {
         if (item.group === "ticket" && event.target.value.trim() !== "" && Number(event.target.value) === 0) {
@@ -264,8 +261,8 @@ export function CompactQuoteBuilder({ library }: { library: LibraryItem[] }) {
           setMessage(`${item.name}门票已确认0元，不列入门票；行程与配套保留。`);
         }
       }} />
-      {group === "extra" ? <button type="button" className="billing-mode" title="点击切换按人或按团计费" onClick={() => updatePrice(set, item.id, { mode: item.mode === "perGroup" ? "perPerson" : "perGroup", includedPeople: undefined, additionalPersonPrice: undefined })}>{item.mode === "perGroup" ? "／团" : "／人"}</button> : <span title={item.includedPeople ? `含${item.includedPeople}人，超出每人加${item.additionalPersonPrice}元` : undefined}>{item.mode === "perGroup" ? "／团" : "／人"}{item.includedPeople ? `（含${item.includedPeople}人，超员+${item.additionalPersonPrice}/人；现${effectiveQuotePrice(item, travelers)}元）` : ""}</span>}
-      {group === "extra" && item.includedPeople ? <span>含{item.includedPeople}人，超员＋{item.additionalPersonPrice}/人；现{effectiveQuotePrice(item, travelers)}元</span> : null}
+      <button type="button" className="billing-mode" title="点击切换按人或按团计费" onClick={() => updatePrice(set, item.id, { mode: item.mode === "perGroup" ? "perPerson" : "perGroup", includedPeople: undefined, additionalPersonPrice: undefined })}>{item.mode === "perGroup" ? "／团" : "／人"}</button>
+      {item.includedPeople ? <span>含{item.includedPeople}人，超员＋{item.additionalPersonPrice}/人；现{effectiveQuotePrice(item, travelers)}元</span> : null}
       <button className="remove" type="button" aria-label={`删除费用：${item.name}`} onClick={() => set((current) => current.filter((line) => line.id !== item.id))}>×</button>
     </div>)}
     <button className="add-inline" type="button" onClick={() => set((current) => [...current, { id: uid(), name: group === "ticket" ? "新增门票" : "新增配套", price: 0, pricePending: true, mode: "perPerson", group, selected: true, locked: false }])}>＋</button>
