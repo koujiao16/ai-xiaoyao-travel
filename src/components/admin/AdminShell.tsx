@@ -5,10 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 const NAV = [
-  { href: "/admin", label: "概览", exact: true },
-  { href: "/admin/attractions", label: "景区" },
-  { href: "/admin/accommodations", label: "住宿" },
-  { href: "/admin/itineraries", label: "行程模板" },
+  { href: "/admin", label: "景区审核", exact: true },
 ];
 
 export function AdminShell({

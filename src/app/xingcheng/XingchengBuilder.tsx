@@ -79,6 +79,29 @@ export function XingchengBuilder({ library, lodgingOptions, dataSource = "local"
   const [wordScript, setWordScript] = useState<"simplified" | "hongkongTraditional">("simplified");
   const [exporting, setExporting] = useState(false);
   const [message, setMessage] = useState("");
+  const [reviewRetry, setReviewRetry] = useState(false);
+  const [submittingReview, setSubmittingReview] = useState(false);
+  const submitCustomReviews = async () => {
+    const items = days.flatMap(day => day.items.map(id => {
+      const item = itemById[id];
+      return item && isCustomProject(item) ? { name: item.name, description: day.descriptions?.[id] ?? item.description } : null;
+    })).filter((item): item is { name: string; description: string } => item !== null);
+    if (!items.length) return;
+    setSubmittingReview(true);
+    try {
+      const response = await fetch("/api/attraction-submissions", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ items }), signal: AbortSignal.timeout(15000),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error);
+      setReviewRetry(false);
+      setMessage(`Word文档已生成；新增提交${result.submitted}项，已提交过${result.duplicates}项${result.skipped ? "，" + result.skipped + "项未填描述，未提交审核" : ""}`);
+    } catch {
+      setReviewRetry(true);
+      setMessage("Word文档已生成，但自定义景区未全部提交成功，请点击重试");
+    } finally { setSubmittingReview(false); }
+  };
   const [brokenImages, setBrokenImages] = useState<Record<string, true>>({});
   const dragRef = useRef<{ dayId: number; itemId: string } | null>(null);
 
@@ -590,6 +613,7 @@ export function XingchengBuilder({ library, lodgingOptions, dataSource = "local"
       anchor.click();
       URL.revokeObjectURL(url);
       setMessage("Word文档已生成");
+      await submitCustomReviews();
     } catch {
       setMessage("文档生成失败，请重试");
     } finally {
@@ -802,6 +826,7 @@ export function XingchengBuilder({ library, lodgingOptions, dataSource = "local"
                           placeholder="填写项目介绍，生成 Word 时会放在该项目名称后；不填则只显示名称。"
                           onChange={(event) => updateDay(day.id, { descriptions: { ...day.descriptions, [id]: event.target.value } })}
                         />
+                        {custom && <small>生成文档时，名称和已填写的描述会提交管理员审核；未审核前不进入公共景区库。</small>}
                         {modified && !custom && <button type="button" onClick={() => {
                           const descriptions = { ...day.descriptions };
                           delete descriptions[id];
@@ -929,6 +954,7 @@ export function XingchengBuilder({ library, lodgingOptions, dataSource = "local"
           <span>{days.length} 天 · 共 {days.reduce((sum, day) => sum + day.items.length, 0)} 个项目</span>
         </div>
         {message && <p className={message.includes("已生成") ? "success-message" : "status-message"}>{message}</p>}
+        {reviewRetry && <button type="button" disabled={submittingReview} onClick={submitCustomReviews}>{submittingReview ? "正在提交…" : "重试提交景区审核"}</button>}
         <label className="word-script-select">
           <span>输出文字</span>
           <select value={wordScript} onChange={(event) => setWordScript(event.target.value as typeof wordScript)}>

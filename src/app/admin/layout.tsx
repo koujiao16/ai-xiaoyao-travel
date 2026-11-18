@@ -6,7 +6,7 @@ export const metadata: Metadata = {
     default: "管理后台",
     template: "%s — 管理后台",
   },
-  description: "景区、住宿与行程模板内容管理",
+  description: "自定义景区提交审核与发布",
 };
 
 export default function AdminRootLayout({ children }: { children: React.ReactNode }) {
