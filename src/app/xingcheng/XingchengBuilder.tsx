@@ -28,6 +28,7 @@ type DayPlan = {
   meals: string[];
   lodging: string;
   photoItems: string[];
+  descriptions?: Record<string, string>;
 };
 
 const initialDays: DayPlan[] = [
@@ -129,9 +130,12 @@ export function XingchengBuilder({ library, lodgingOptions, dataSource = "local"
   };
 
   const removeItem = (day: DayPlan, itemId: string) => {
+    const descriptions = { ...day.descriptions };
+    delete descriptions[itemId];
     updateDay(day.id, {
       items: day.items.filter((id) => id !== itemId),
       photoItems: day.photoItems.filter((id) => id !== itemId),
+      descriptions,
     });
   };
 
@@ -407,7 +411,10 @@ export function XingchengBuilder({ library, lodgingOptions, dataSource = "local"
           if (item.duration) {
             narrativeRuns.push(new TextRun({ text: toWordText(`（游览${item.duration}）`), bold: true, color: "37322E" }));
           }
-          narrativeRuns.push(new TextRun({ text: toWordText(item.description), color: "37322E" }));
+          const description = day.descriptions?.[item.id] ?? item.description;
+          if (description.trim()) {
+            narrativeRuns.push(new TextRun({ text: toWordText(description.trim()), color: "37322E" }));
+          }
           if (index < selected.length - 1) {
             narrativeRuns.push(new TextRun({ text: toWordText("；"), color: "37322E" }));
           }
@@ -779,6 +786,30 @@ export function XingchengBuilder({ library, lodgingOptions, dataSource = "local"
                     )}
                   </div>
                   {invalid && <p className="error-note">请从联想结果中选择，或点击“＋自定义项目”</p>}
+
+                  <div className="project-description-editors">
+                    {day.items.map((id) => {
+                      const item = itemById[id];
+                      if (!item) return null;
+                      const custom = isCustomProject(item);
+                      const modified = day.descriptions?.[id] !== undefined;
+                      return <details key={id} className="project-description-editor" open={custom || undefined}>
+                        <summary>{item.name} · {custom ? "填写项目描述" : "编辑本次描述"}</summary>
+                        <textarea
+                          aria-label={`Day${day.id} ${item.name}项目描述`}
+                          rows={3}
+                          value={day.descriptions?.[id] ?? item.description}
+                          placeholder="填写项目介绍，生成 Word 时会放在该项目名称后；不填则只显示名称。"
+                          onChange={(event) => updateDay(day.id, { descriptions: { ...day.descriptions, [id]: event.target.value } })}
+                        />
+                        {modified && !custom && <button type="button" onClick={() => {
+                          const descriptions = { ...day.descriptions };
+                          delete descriptions[id];
+                          updateDay(day.id, { descriptions });
+                        }}>恢复景区原文</button>}
+                      </details>;
+                    })}
+                  </div>
 
                   <div className="day-options">
                     <fieldset>
