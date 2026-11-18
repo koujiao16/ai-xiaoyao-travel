@@ -4,6 +4,7 @@
 .daily-options button,.quote-result button{border:1px solid #c4b8ab;border-radius:8px;padding:6px 12px}
 .daily-options button[aria-pressed=true]{background:#54745e;color:white}
 .quote-result button{background:#9e4738;color:white}
+.compact-topbar .quote-admin-entry{padding:7px 12px;border:1px solid #ded4c9;border-radius:999px;color:#793225;background:#fffdfa;text-decoration:none;font-size:12px;white-space:nowrap}
 .compact-quote .quote-help{font-size:11px;line-height:1.6;color:#8b8178;margin:0 0 8px;font-weight:400}
 .compact-quote .cost-help-wrap{width:100%}
 .compact-quote .billing-mode{position:relative;z-index:2;padding:3px 5px;border:1px dashed #cbbbac;border-radius:4px;background:#fffdf9;color:#8e4436;font:inherit;font-size:12px;white-space:nowrap;cursor:pointer}

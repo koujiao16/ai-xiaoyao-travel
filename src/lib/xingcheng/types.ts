@@ -168,6 +168,7 @@ export type FullItinerary = ItineraryRecord & {
 
 /** Frontend library item shape used by /xingcheng builder */
 export type LibraryItem = {
+  quotePrices?: import("./quote-pricing").QuotePriceItem[];
   id: string;
   name: string;
   keywords: string[];

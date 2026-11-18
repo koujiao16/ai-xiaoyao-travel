@@ -1,5 +1,6 @@
 import type { AttractionCategory, AttractionKind, AttractionRecord, LibraryItem } from "@/lib/xingcheng/types";
 import { fallbackLibrary } from "@/data/xingcheng/library";
+import { parsePrices, PRICE_TAG } from "./review-pricing";
 
 function inferCategory(item: LibraryItem): AttractionCategory {
   if (item.kind === "服务") return "服务";
@@ -81,7 +82,8 @@ export function attractionRecordToLibraryItem(record: AttractionRecord): Library
   return {
     id: record.slug,
     name: record.name,
-    keywords: record.keywords?.length ? record.keywords : [record.name],
+    keywords: record.keywords?.filter(x => !x.startsWith(PRICE_TAG) && !x.startsWith("review-")) || [record.name],
+    quotePrices: parsePrices(record.keywords || []),
     duration: record.duration || "",
     description: record.description || "",
     kind: (record.kind || "景点") as AttractionKind,

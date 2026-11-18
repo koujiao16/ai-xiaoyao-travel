@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useMemo, useRef, useState } from "react";
 import type { LibraryItem } from "@/lib/xingcheng/types";
 import { createCustomProject, isCustomProject } from "@/lib/xingcheng/custom-project";
+import { ReviewDot } from "@/components/admin/ReviewDot";
 import {
   ALL_TRAVEL_REGIONS,
   resolveTravelRegion,
@@ -96,6 +97,7 @@ export function XingchengBuilder({ library, lodgingOptions, dataSource = "local"
       const result = await response.json();
       if (!response.ok) throw new Error(result.error);
       setReviewRetry(false);
+      window.dispatchEvent(new Event("reviews-changed"));
       setMessage(`Word文档已生成；新增提交${result.submitted}项，已提交过${result.duplicates}项${result.skipped ? "，" + result.skipped + "项未填描述，未提交审核" : ""}`);
     } catch {
       setReviewRetry(true);
@@ -675,6 +677,7 @@ export function XingchengBuilder({ library, lodgingOptions, dataSource = "local"
               />
             </svg>
             <span className="admin-entry-label-full">管理后台</span>
+            <ReviewDot />
             <span className="admin-entry-label-short">后台</span>
           </Link>
         </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { ReviewDot } from "@/components/admin/ReviewDot";
 import { LodgingSearch } from "@/components/ui/LodgingSearch";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
@@ -47,6 +48,8 @@ export function CompactQuoteBuilder({ library }: { library: LibraryItem[] }) {
   const [exporting, setExporting] = useState(false);
   const [message, setMessage] = useState("");
   const [copyFallback, setCopyFallback] = useState("");
+  const [priceReviewRetry, setPriceReviewRetry] = useState(false);
+  const [priceReviewBusy, setPriceReviewBusy] = useState(false);
   const [tickets, setTickets] = useState<PriceItem[]>([]);
   const [extras, setExtras] = useState<PriceItem[]>([]);
   const [hotels, setHotels] = useState<Hotel[]>([]);
@@ -70,7 +73,7 @@ export function CompactQuoteBuilder({ library }: { library: LibraryItem[] }) {
       setDayCount(Math.max(1, ...sourceItems.map((item) => item.day), ...Object.keys(draft.details || {}).map(Number)));
       setTitle(draft.tripName ? `${draft.tripName}报价` : "行程报价");
       const prices = sourceItems.filter((item) => isCustomProject(item) || !excludedFromCost.test(item.name)).flatMap((item) => {
-        const known = getProjectQuotePrices(item);
+        const known = getProjectQuotePrices({ ...item, quotePrices: library.find(x => x.id === item.id)?.quotePrices });
         return known.map((entry) => ({ id: uid(), ...entry, locked: true, sourceKey: item.quoteKey }));
       });
       setTickets(prices.filter((item) => item.group === "ticket"));
@@ -87,7 +90,7 @@ export function CompactQuoteBuilder({ library }: { library: LibraryItem[] }) {
     } finally {
       localStorage.removeItem("ai-xiaoyao-quote-draft");
     }
-  }, []);
+  }, [library]);
 
   const updatePrice = (set: React.Dispatch<React.SetStateAction<PriceItem[]>>, id: string, patch: Partial<PriceItem>) => set((items) => items.map((item) => item.id === id ? { ...item, ...patch } : item));
   const updateHotel = (id: string, patch: Partial<Hotel>) => setHotels((items) => items.map((item) => item.id === id ? { ...item, ...patch } : item));
@@ -107,7 +110,7 @@ export function CompactQuoteBuilder({ library }: { library: LibraryItem[] }) {
     setItinerary((current) => [...current, item]);
     setQueries((current) => ({ ...current, [day]: "" }));
     if (isCustomProject(item) || !excludedFromCost.test(item.name)) {
-      const charges = getProjectQuotePrices(item);
+      const charges = getProjectQuotePrices({ ...item, quotePrices: candidate.quotePrices });
       const mapped = charges.map((entry) => ({ id: uid(), ...entry, locked: true, sourceKey: item.quoteKey }));
       setTickets((current) => [...current, ...mapped.filter((entry) => entry.group === "ticket")]);
       setExtras((current) => [...current, ...mapped.filter((entry) => entry.group === "extra").map(entry => ({ ...entry, selected: true }))]);
@@ -147,6 +150,24 @@ export function CompactQuoteBuilder({ library }: { library: LibraryItem[] }) {
     setDayDetails((current) => ({ ...current, [day]: { ...(current[day] || { meals: [] }), lodging } }));
   };
 
+  const submitPriceReviews = async () => {
+    const items = tickets.filter(ticket => !ticket.pricePending && (
+      itinerary.some(item => item.quoteKey === ticket.sourceKey && isCustomProject(item)) ||
+      (!ticket.sourceKey && !ticket.locked && ticket.name !== "新增门票" && !library.some(item => item.name === ticket.name))
+    )).map(ticket => ({ name: ticket.name, price: ticket.price, mode: ticket.mode }));
+    if (!items.length) return;
+    setPriceReviewBusy(true);
+    try {
+      const response = await fetch("/api/attraction-submissions", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ items }), signal: AbortSignal.timeout(15000) });
+      const result = await response.json();
+      if (!response.ok) throw Error(result.error);
+      setPriceReviewRetry(false);
+      window.dispatchEvent(new Event("reviews-changed"));
+      setMessage(current => current + `；门票提交审核${result.submitted}项，已提交过${result.duplicates}项`);
+    } catch {
+      setPriceReviewRetry(true); setMessage(current => current + "；门票审核提交未完成，可点击重试");
+    } finally { setPriceReviewBusy(false); }
+  };
   const exportQuote = async () => {
     setExporting(true);
     setMessage("");
@@ -190,6 +211,7 @@ export function CompactQuoteBuilder({ library }: { library: LibraryItem[] }) {
       anchor.click();
       URL.revokeObjectURL(url);
       setMessage("报价 Word 已生成");
+      await submitPriceReviews();
     } catch {
       setMessage("报价 Word 生成失败，请重试");
     } finally {
@@ -232,9 +254,11 @@ export function CompactQuoteBuilder({ library }: { library: LibraryItem[] }) {
     try {
       await navigator.clipboard.writeText(text);
       setMessage("简版报价已复制，可按 Command＋V / Ctrl＋V 粘贴");
+      await submitPriceReviews();
     } catch {
       setCopyFallback(text);
       setMessage("浏览器未允许自动复制，请选中下方文字后按 Command＋C / Ctrl＋C");
+      await submitPriceReviews();
     }
   };
 
@@ -270,7 +294,7 @@ export function CompactQuoteBuilder({ library }: { library: LibraryItem[] }) {
   const groupFields = (items: GroupCost[], set: React.Dispatch<React.SetStateAction<GroupCost[]>>, defaultName: string, switchable = true) => <>{items.map((item) => <div className="cost-inline" key={item.id}><input value={item.name} onChange={(event) => updateGroupCost(set, item.id, { name: event.target.value })} /><input type="number" min="0" value={item.price || ""} placeholder="0" onChange={(event) => updateGroupCost(set, item.id, { price: asNumber(Number(event.target.value)) })} />{switchable ? <button type="button" className="billing-mode" title="点击切换按人或按团计费" onClick={() => updateGroupCost(set, item.id, { mode: item.mode === "perGroup" ? "perPerson" : "perGroup" })}>{item.mode === "perGroup" ? "／团" : "／人"}</button> : <span>／团</span>}<input className="count" type="number" min="1" value={item.count} onChange={(event) => updateGroupCost(set, item.id, { count: Math.max(1, asNumber(Number(event.target.value), 1)) })} /><span>{item.mode === "perGroup" ? "份" : "项"}</span><button type="button" className="remove" onClick={() => set((current) => current.filter((line) => line.id !== item.id))}>×</button></div>)}<button className="add-inline" type="button" onClick={() => set((current) => [...current, { id: uid(), name: defaultName, price: 0, count: 1, mode: "perGroup" }])}>＋</button></>;
 
   return <main className="compact-quote">
-    <header className="compact-topbar"><Link href="/xingcheng" className="compact-brand"><Image src="/images/branding/ai-xiaoyao-mark.png" alt="爱逍遥" width={40} height={40} /><span><strong>爱逍遥报价工具</strong><small>单团报价核算</small></span></Link><Link href="/xingcheng">返回行程生成器</Link></header>
+    <header className="compact-topbar"><Link href="/xingcheng" className="compact-brand"><Image src="/images/branding/ai-xiaoyao-mark.png" alt="爱逍遥" width={40} height={40} /><span><strong>爱逍遥报价工具</strong><small>单团报价核算</small></span></Link><div style={{ display: "flex", alignItems: "center", gap: 12 }}><Link href="/xingcheng">返回行程生成器</Link><Link href="/admin" className="quote-admin-entry">管理后台<ReviewDot /></Link></div></header>
     <section className="itinerary-summary">
       <div><span>简版行程</span><input className="itinerary-title" value={title} onChange={(event) => setTitle(event.target.value)} /><label className="day-count">天数<input type="number" min="1" max="15" value={dayCount} onChange={(event) => setDayCount(Math.max(1, Math.min(15, asNumber(Number(event.target.value), 1))))} /></label><label className="day-count">核算人数<input type="number" min="1" value={travelers} onChange={(event) => setTravelers(Math.max(1, asNumber(Number(event.target.value), 1)))} /></label></div>
       <p className="quote-help">先输入景区名称，再选择搜索结果；未收录的项目，输入名称后点击「＋自定义项目」。</p>
@@ -290,6 +314,7 @@ export function CompactQuoteBuilder({ library }: { library: LibraryItem[] }) {
       <CostRow travelers={travelers} title={<input className="cost-category-title" aria-label="费用栏目名称" value={leaderTitle} onChange={event => setLeaderTitle(event.target.value)} />} total={totals.leader}><div className="cost-help-wrap"><div className="multi-lines">{groupFields(leaderCosts, setLeaderCosts, "领队费用")}</div></div></CostRow>
     </section>
     <section className="itinerary-summary"><label>报价备注<textarea rows={8} style={{display:"block",width:"100%",padding:12}} value={remarks} onChange={e=>setRemarks(e.target.value)}/></label></section>
+    {priceReviewRetry && <section className="itinerary-summary"><button type="button" disabled={priceReviewBusy} onClick={submitPriceReviews}>{priceReviewBusy ? "正在提交…" : "重试提交门票审核"}</button></section>}
     {copyFallback && <section className="itinerary-summary"><label>简版报价（点击文字框后全选复制）<textarea aria-label="待复制的简版报价" readOnly rows={12} style={{ display: "block", width: "100%", padding: 12, background: "#fffdf9", color: "#302a25" }} value={copyFallback} onFocus={event => event.target.select()} /></label><button type="button" onClick={() => setCopyFallback("")}>关闭</button></section>}
     <footer className="quote-result"><div><strong>{title || "未命名报价"}</strong><span>{travelers} 人核算</span></div><div className="quote-export-actions"><button type="button" disabled={exporting} onClick={exportQuote}>详细报价 Word</button><button type="button" disabled={exporting} onClick={copySimpleQuote}>复制简版报价</button></div><small role="status">{message}</small><div><span>团费合计</span><strong>{money.format(totals.total)}</strong></div><div className="highlight"><span>人均报价</span><strong>{money.format(totals.perPerson)}</strong></div></footer>
   </main>;

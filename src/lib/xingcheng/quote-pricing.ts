@@ -22,7 +22,8 @@ export function isKnownFreeTicket(item: Pick<QuotePriceItem, "group" | "price" |
 }
 
 /** Distinguish explicitly free tickets from unknown prices and custom manual items. */
-export function getProjectQuotePrices(item: { id: string; name: string }): QuotePriceItem[] {
+export function getProjectQuotePrices(item: { id: string; name: string; quotePrices?: QuotePriceItem[] }): QuotePriceItem[] {
+  if (item.quotePrices) return item.quotePrices.filter(entry => !isKnownFreeTicket(entry));
   const custom = item.id.startsWith("custom-");
   const configured = !custom ? quotePriceCatalog[item.name] : undefined;
   if (configured) return configured.filter(entry => !isKnownFreeTicket(entry));
