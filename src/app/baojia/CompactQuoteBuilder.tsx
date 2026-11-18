@@ -46,6 +46,7 @@ export function CompactQuoteBuilder({ library }: { library: LibraryItem[] }) {
   const [remarks, setRemarks] = useState("此报价按实际人数核算，人数不同价格不同。\n以上报价为预估报价，实际成团前请再次核对相关费用。\n建议至少提前 15 天确定行程，以便预订酒店、车辆、导游及相关资源。\n报价不含行程以外的个人消费及自费项目。\n如产生单人入住，须按实际酒店价格补单房差。\n景区、演出、酒店等如遇官方价格政策调整，按实际产生费用为准。\n具体行程安排、酒店、车辆及导游，以最终确认单为准。");
   const [exporting, setExporting] = useState(false);
   const [message, setMessage] = useState("");
+  const [copyFallback, setCopyFallback] = useState("");
   const [tickets, setTickets] = useState<PriceItem[]>([]);
   const [extras, setExtras] = useState<PriceItem[]>([]);
   const [hotels, setHotels] = useState<Hotel[]>([]);
@@ -196,11 +197,9 @@ export function CompactQuoteBuilder({ library }: { library: LibraryItem[] }) {
     }
   };
 
-  const exportSimpleQuote = async () => {
-    setExporting(true);
+  const copySimpleQuote = async () => {
     setMessage("");
-    try {
-      const { AlignmentType, Document, Packer, Paragraph, TextRun } = await import("docx");
+    setCopyFallback("");
       const names = (items: PriceItem[]) => items.filter(item => item.selected && !isKnownFreeTicket(item)).map(item => item.name).join("、") || "无特别列明项目";
       const noticeLines = remarks.split("\n").filter(Boolean);
       const simpleRows: Array<[string, string]> = [
@@ -213,21 +212,30 @@ export function CompactQuoteBuilder({ library }: { library: LibraryItem[] }) {
         ["杂项", misc.map(item => item.name).join("、") || "按报价备注执行"],
         ...(leaderCosts.length ? [[leaderTitle || "领队费用", leaderCosts.map(item => item.name).join("、")] as [string, string]] : []),
       ];
-      const heading = (text: string) => new Paragraph({ spacing: { before: 150, after: 70 }, children: [new TextRun({ text, bold: true, color: "8B3E2F", size: 24 })] });
-      const doc = new Document({ sections: [{ properties: { page: { margin: { top: 850, bottom: 850, left: 1000, right: 1000 } } }, children: [
-        new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 120 }, children: [new TextRun({ text: `${title || "定制行程"}预估报价`, bold: true, size: 34 })] }),
-        new Paragraph({ children: [new TextRun({ text: `核算人数：${travelers} 人`, color: "625A52" })] }),
-        ...noticeLines.slice(0, 2).map(line => new Paragraph({ spacing: { after: 70 }, children: [new TextRun({ text: line, color: "625A52" })] })),
-        heading("简版行程"),
-        ...Array.from({ length: dayCount }, (_, index) => { const day = index + 1; const detail = dayDetails[day] || { meals: [], lodging: "" }; return new Paragraph({ spacing: { after: 70 }, children: [new TextRun({ text: `D${day}　`, bold: true }), new TextRun({ text: itinerary.filter(item => item.day === day).map(item => item.name).join(" · ") || "待填写" }), new TextRun({ text: `　${detail.meals.length ? detail.meals.map(m => m[0]).join("、") : "-"}　${detail.lodging || "-"}`, color: "625A52" })] }); }),
-        heading("报价包含"),
-        ...simpleRows.map(([label, value]) => new Paragraph({ spacing: { after: 80 }, children: [new TextRun({ text: `${label}：`, bold: true }), new TextRun({ text: value })] })),
-        new Paragraph({ spacing: { before: 170, after: 140 }, children: [new TextRun({ text: `单地接：${money.format(totals.perPerson)}／人　　团队总费用：${money.format(totals.total)}`, bold: true, size: 28, color: "8B3E2F" })] }),
-        heading("服务标准及备注"),
-        ...noticeLines.slice(2).map(line => new Paragraph({ spacing: { after: 60 }, children: [new TextRun({ text: line })] })),
-      ] }] });
-      const blob = await Packer.toBlob(doc); const url = URL.createObjectURL(blob); const anchor = document.createElement("a"); anchor.href = url; anchor.download = `${(title || "报价").replace(/[\\/:*?"<>|]/g, "-")}简版预估报价.docx`; anchor.click(); URL.revokeObjectURL(url); setMessage("简版预估报价已生成");
-    } catch { setMessage("简版预估报价生成失败，请重试"); } finally { setExporting(false); }
+
+    const today = new Intl.DateTimeFormat("zh-CN", { timeZone: "Asia/Shanghai", year: "2-digit", month: "numeric", day: "numeric" }).format(new Date()).split("/");
+    const itineraryText = Array.from({ length: dayCount }, (_, index) => {
+      const day = index + 1;
+      const detail = dayDetails[day] || { meals: [], lodging: "" };
+      const route = itinerary.filter(item => item.day === day).map(item => item.name).join(" · ") || "待填写";
+      return `D${day}　${route}\n用餐：${detail.meals.length ? detail.meals.map(m => m[0]).join("、") : "不含"}　住宿：${detail.lodging || "-"}`;
+    });
+    const text = [
+      `${today[0]}.${today[1]}月${today[2]}日预估报价，此报价不含法定节假日。确定前请二次确认价格。`,
+      title || "定制行程报价", "", "简版行程", ...itineraryText, "",
+      `按${travelers}人核算`,
+      `单地接：${money.format(totals.perPerson)}／人`,
+      `团队总费用：${money.format(totals.total)}／团`, "",
+      ...simpleRows.map(([label, value]) => `${label}：${value}`),
+      "", "服务标准及备注", ...noticeLines,
+    ].join("\n");
+    try {
+      await navigator.clipboard.writeText(text);
+      setMessage("简版报价已复制，可按 Command＋V / Ctrl＋V 粘贴");
+    } catch {
+      setCopyFallback(text);
+      setMessage("浏览器未允许自动复制，请选中下方文字后按 Command＋C / Ctrl＋C");
+    }
   };
 
   const totals = useMemo(() => {
@@ -285,6 +293,7 @@ export function CompactQuoteBuilder({ library }: { library: LibraryItem[] }) {
       <CostRow travelers={travelers} title={<input className="cost-category-title" aria-label="费用栏目名称" value={leaderTitle} onChange={event => setLeaderTitle(event.target.value)} />} total={totals.leader}><div className="cost-help-wrap"><div className="multi-lines">{groupFields(leaderCosts, setLeaderCosts, "领队费用")}</div></div></CostRow>
     </section>
     <section className="itinerary-summary"><label>报价备注<textarea rows={8} style={{display:"block",width:"100%",padding:12}} value={remarks} onChange={e=>setRemarks(e.target.value)}/></label></section>
-    <footer className="quote-result"><div><strong>{title || "未命名报价"}</strong><span>{travelers} 人核算</span></div><div className="quote-export-actions"><button type="button" disabled={exporting} onClick={exportQuote}>详细报价 Word</button><button type="button" disabled={exporting} onClick={exportSimpleQuote}>简版预估报价</button></div><small role="status">{message}</small><div><span>团费合计</span><strong>{money.format(totals.total)}</strong></div><div className="highlight"><span>人均报价</span><strong>{money.format(totals.perPerson)}</strong></div></footer>
+    {copyFallback && <section className="itinerary-summary"><label>简版报价（点击文字框后全选复制）<textarea aria-label="待复制的简版报价" readOnly rows={12} style={{ display: "block", width: "100%", padding: 12, background: "#fffdf9", color: "#302a25" }} value={copyFallback} onFocus={event => event.target.select()} /></label><button type="button" onClick={() => setCopyFallback("")}>关闭</button></section>}
+    <footer className="quote-result"><div><strong>{title || "未命名报价"}</strong><span>{travelers} 人核算</span></div><div className="quote-export-actions"><button type="button" disabled={exporting} onClick={exportQuote}>详细报价 Word</button><button type="button" disabled={exporting} onClick={copySimpleQuote}>复制简版报价</button></div><small role="status">{message}</small><div><span>团费合计</span><strong>{money.format(totals.total)}</strong></div><div className="highlight"><span>人均报价</span><strong>{money.format(totals.perPerson)}</strong></div></footer>
   </main>;
 }
