@@ -1,6 +1,8 @@
 "use client";
 
 import Image from "next/image";
+import { DEFAULT_TRAVEL_REGION, TRAVEL_REGIONS, resolveTravelRegion, type TravelRegionFilter } from "@/lib/xingcheng/travel-regions";
+import { fallbackLodgingLabels } from "@/data/xingcheng/accommodations";
 import { ReviewDot } from "@/components/admin/ReviewDot";
 import { LodgingSearch } from "@/components/ui/LodgingSearch";
 import Link from "next/link";
@@ -38,6 +40,7 @@ function sectionTotal(items: PriceItem[], travelers: number) {
 const CostRow = ({ title: rowTitle, children, total, travelers }: { title: React.ReactNode; children: React.ReactNode; total: number; travelers: number }) => <section className="compact-row"><h2>{rowTitle}</h2><div className="compact-row-body">{children}</div><strong className="compact-row-total">{money.format(total)}<small>／人 {money.format(total / Math.max(1, travelers))}</small></strong></section>;
 
 export function CompactQuoteBuilder({ library }: { library: LibraryItem[] }) {
+  const [selectedRegion, setSelectedRegion] = useState<TravelRegionFilter>(DEFAULT_TRAVEL_REGION);
   const [title, setTitle] = useState("定制行程报价");
   const [travelers, setTravelers] = useState(20);
   const [itinerary, setItinerary] = useState<DraftItem[]>([]);
@@ -70,6 +73,8 @@ export function CompactQuoteBuilder({ library }: { library: LibraryItem[] }) {
       const draft = JSON.parse(raw) as Draft;
       const sourceItems = (draft.items || []).map((item, index) => ({ ...item, quoteKey: `${item.id}-${item.day}-${index}` }));
       setItinerary(sourceItems);
+      const firstRegion = sourceItems.map(item => resolveTravelRegion(item)).find(Boolean);
+      if (firstRegion) setSelectedRegion(firstRegion);
       setDayCount(Math.max(1, ...sourceItems.map((item) => item.day), ...Object.keys(draft.details || {}).map(Number)));
       setTitle(draft.tripName ? `${draft.tripName}报价` : "行程报价");
       const prices = sourceItems.filter((item) => isCustomProject(item) || !excludedFromCost.test(item.name)).flatMap((item) => {
@@ -135,10 +140,10 @@ export function CompactQuoteBuilder({ library }: { library: LibraryItem[] }) {
   const suggestionsFor = (day: number) => {
     const query = (queries[day] || "").trim().toLowerCase();
     if (!query) return [];
-    return library.filter((item) => [item.name, ...item.keywords].some((word) => word.toLowerCase().includes(query))).slice(0, 6);
+    return library.filter(item => item.kind === "服务" || resolveTravelRegion(item) === selectedRegion).filter((item) => [item.name, ...item.keywords].some((word) => word.toLowerCase().includes(query))).slice(0, 6);
   };
 
-  const cities = useMemo(() => Array.from(new Set(library.map((item) => item.city).filter(Boolean))).sort(), [library]);
+  const cities = useMemo(() => Array.from(new Set([...library.filter(item => resolveTravelRegion(item) === selectedRegion).map(item => item.city), ...fallbackLodgingLabels.filter(name => resolveTravelRegion({ name }) === selectedRegion)])).filter(Boolean).sort(), [library, selectedRegion]);
   const toggleMeal = (day: number, meal: string) => {
     setDayDetails((current) => {
       const detail = current[day] || { meals: [], lodging: "" };
@@ -297,6 +302,7 @@ export function CompactQuoteBuilder({ library }: { library: LibraryItem[] }) {
     <header className="compact-topbar"><Link href="/xingcheng" className="compact-brand"><Image src="/images/branding/ai-xiaoyao-mark.png" alt="爱逍遥" width={40} height={40} /><span><strong>爱逍遥报价工具</strong><small>单团报价核算</small></span></Link><div style={{ display: "flex", alignItems: "center", gap: 12 }}><Link href="/xingcheng">返回行程生成器</Link><Link href="/admin" className="quote-admin-entry">管理后台<ReviewDot /></Link></div></header>
     <section className="itinerary-summary">
       <div><span>简版行程</span><input className="itinerary-title" value={title} onChange={(event) => setTitle(event.target.value)} /><label className="day-count">天数<input type="number" min="1" max="15" value={dayCount} onChange={(event) => setDayCount(Math.max(1, Math.min(15, asNumber(Number(event.target.value), 1))))} /></label><label className="day-count">核算人数<input type="number" min="1" value={travelers} onChange={(event) => setTravelers(Math.max(1, asNumber(Number(event.target.value), 1)))} /></label></div>
+      <nav className="quote-region-picker" aria-label="出行区域">{TRAVEL_REGIONS.map(region => <button type="button" key={region.id} aria-pressed={selectedRegion === region.id} onClick={() => setSelectedRegion(region.id)}>{region.id}</button>)}</nav>
       <p className="quote-help">先输入景区名称，再选择搜索结果；未收录的项目，输入名称后点击「＋自定义项目」。</p>
       {Array.from({ length: dayCount }, (_, index) => index + 1).map((day) => {
         const suggestions = suggestionsFor(day);

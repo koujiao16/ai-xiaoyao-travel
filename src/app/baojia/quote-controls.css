@@ -4,6 +4,9 @@
 .daily-options button,.quote-result button{border:1px solid #c4b8ab;border-radius:8px;padding:6px 12px}
 .daily-options button[aria-pressed=true]{background:#54745e;color:white}
 .quote-result button{background:#9e4738;color:white}
+.quote-region-picker{display:flex;gap:8px;margin:8px 0 12px}
+.quote-region-picker button{padding:6px 13px;border:1px solid #ded4c9;border-radius:999px;background:#fffdf9;color:#6d4c3f;font-size:12px;cursor:pointer}
+.quote-region-picker button[aria-pressed=true]{color:white;background:#9e4738;border-color:#9e4738}
 .compact-topbar .quote-admin-entry{padding:7px 12px;border:1px solid #ded4c9;border-radius:999px;color:#793225;background:#fffdfa;text-decoration:none;font-size:12px;white-space:nowrap}
 .compact-quote .quote-help{font-size:11px;line-height:1.6;color:#8b8178;margin:0 0 8px;font-weight:400}
 .compact-quote .cost-help-wrap{width:100%}

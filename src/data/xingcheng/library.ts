@@ -1,6 +1,7 @@
 /** Local fallback attraction & lodging data for /xingcheng */
 
 import type { LibraryItem } from "@/lib/xingcheng/types";
+import { northeastLibrary } from "./northeast";
 
 export type { LibraryItem };
 
@@ -10,6 +11,7 @@ export const routeName = (item?: LibraryItem | null) => {
 };
 
 export const baseLibrary: LibraryItem[] = [
+  ...northeastLibrary,
   {
     id: "xingqing-palace",
     name: "兴庆宫",
@@ -478,4 +480,4 @@ export const henanLibrary: LibraryItem[] = [
 
 export const fallbackLibrary: LibraryItem[] = [...baseLibrary, ...additionalLibrary, ...ankangLibrary, ...hanzhongLibrary, ...shangluoLibrary, ...qinlingAroundLibrary, ...henanLibrary];
 
-export const fallbackLodgingCityOptions = ["西安", "华山", "临潼", "延安", "壶口", "汉中", "安康", "商洛", "宝鸡", "郑州", "洛阳", "三门峡", "开封", "登封", "不住宿"] as const;
+export const fallbackLodgingCityOptions = ["西安", "华山", "临潼", "延安", "壶口", "汉中", "安康", "商洛", "宝鸡", "郑州", "洛阳", "三门峡", "开封", "登封", "长春", "二道白河", "延吉", "不住宿"] as const;

@@ -9,7 +9,7 @@ import type { LibraryItem } from "@/lib/xingcheng/types";
 import { createCustomProject, isCustomProject } from "@/lib/xingcheng/custom-project";
 import { ReviewDot } from "@/components/admin/ReviewDot";
 import {
-  ALL_TRAVEL_REGIONS,
+  DEFAULT_TRAVEL_REGION,
   resolveTravelRegion,
   TRAVEL_REGIONS,
   type TravelRegionFilter,
@@ -46,7 +46,7 @@ type Props = {
 
 export function XingchengBuilder({ library, lodgingOptions, dataSource = "local" }: Props) {
   const [tripName, setTripName] = useState("西安华山3日游");
-  const [selectedRegion, setSelectedRegion] = useState<TravelRegionFilter>(ALL_TRAVEL_REGIONS);
+  const [selectedRegion, setSelectedRegion] = useState<TravelRegionFilter>(DEFAULT_TRAVEL_REGION);
   const [customProjects, setCustomProjects] = useState<LibraryItem[]>([]);
   const safeLibrary = useMemo(() => [...library, ...customProjects], [library, customProjects]);
   const safeLodging = useMemo(
@@ -57,7 +57,6 @@ export function XingchengBuilder({ library, lodgingOptions, dataSource = "local"
     () =>
       safeLibrary.filter(
         (item) =>
-          selectedRegion === ALL_TRAVEL_REGIONS ||
           item.kind === "服务" ||
           isCustomProject(item) ||
           resolveTravelRegion(item) === selectedRegion,
@@ -69,7 +68,6 @@ export function XingchengBuilder({ library, lodgingOptions, dataSource = "local"
       safeLodging.filter(
         (name) =>
           name === NO_LODGING_LABEL ||
-          selectedRegion === ALL_TRAVEL_REGIONS ||
           resolveTravelRegion({ name }) === selectedRegion,
       ),
     [safeLodging, selectedRegion],
@@ -584,6 +582,11 @@ export function XingchengBuilder({ library, lodgingOptions, dataSource = "local"
         );
       });
 
+      const licensedPhotos = photoIds.map(id => itemById[id]).filter(item => item?.id.startsWith("ne-") && item.imageCredit);
+      if (licensedPhotos.length) {
+        children.push(new Paragraph({ spacing: { before: 120 }, children: [new TextRun({ text: toWordText("图片署名与许可"), bold: true, size: 16 })] }));
+        licensedPhotos.forEach(item => children.push(new Paragraph({ children: [new TextRun({ text: item.name + "：" + item.imageCredit + "；" + item.imageLicenseSource + "；https://creativecommons.org/licenses/by-sa/4.0/", size: 14, color: "756E67" })] })));
+      }
       children.push(
         tableSeparator(),
         buildFeeTable("费用包含", feeIncluded),
@@ -699,13 +702,6 @@ export function XingchengBuilder({ library, lodgingOptions, dataSource = "local"
         <div className="region-picker" aria-label="出行区域筛选">
           <span>出行区域</span>
           <div className="region-options">
-            <button
-              type="button"
-              className={selectedRegion === ALL_TRAVEL_REGIONS ? "is-selected" : ""}
-              onClick={() => setSelectedRegion(ALL_TRAVEL_REGIONS)}
-            >
-              全部
-            </button>
             {TRAVEL_REGIONS.map((region) => (
               <button
                 type="button"
@@ -730,6 +726,7 @@ export function XingchengBuilder({ library, lodgingOptions, dataSource = "local"
           className="sample-button"
           onClick={() => {
             setTripName("西安华山3日游");
+            setSelectedRegion(DEFAULT_TRAVEL_REGION);
             setDays(initialDays);
             setMessage("");
           }}

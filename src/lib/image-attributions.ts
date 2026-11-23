@@ -14,6 +14,17 @@ export type AttractionImageAttribution = {
 };
 
 export const attractionImageAttributions: AttractionImageAttribution[] = [
+  ...[
+    { id: "ne-changbai-north", nameZh: "长白山北景区（非雪季瀑布实景）", nameEn: "Changbai North Scenic Area", source: "Changbai_Waterfall_5.jpg" },
+    { id: "ne-yanji-west-market", nameZh: "延吉西市场", nameEn: "Yanji West Market", source: "West_Market_entrance.jpg" },
+  ].map(item => ({
+    id: item.id, nameZh: item.nameZh, nameEn: item.nameEn, file: item.id + ".webp",
+    imageSrc: "/images/attractions/" + item.id + ".webp", author: "EditQ",
+    license: "CC BY-SA 4.0", licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
+    sourcePage: "https://commons.wikimedia.org/wiki/File:" + item.source,
+    sourcePageLabel: item.source, credit: "EditQ / Wikimedia Commons / CC BY-SA 4.0",
+    modification: "原图居中裁切为1600×960并转WebP；修改图继续以CC BY-SA 4.0许可。长白山图为非雪季实景，不代表冬季效果。",
+  })),
   {
     id: "city-wall",
     nameZh: "西安明城墙",
