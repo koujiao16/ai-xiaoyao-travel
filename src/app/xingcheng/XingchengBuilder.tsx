@@ -428,9 +428,6 @@ export function XingchengBuilder({ library, lodgingOptions, dataSource = "local"
         const narrativeRuns: InstanceType<typeof TextRun>[] = [];
         selected.forEach((item, index) => {
           narrativeRuns.push(new TextRun({ text: toWordText(`【${item.name}】`), bold: true, color: "8B3E2F" }));
-          if (item.seasonal) {
-            narrativeRuns.push(new TextRun({ text: toWordText(`（${item.seasonal}）`), bold: true, color: "54745E" }));
-          }
           if (item.duration) {
             narrativeRuns.push(new TextRun({ text: toWordText(`（游览${item.duration}）`), bold: true, color: "37322E" }));
           }
@@ -775,7 +772,6 @@ export function XingchengBuilder({ library, lodgingOptions, dataSource = "local"
                         >
                           <i aria-hidden="true">⋮⋮</i>
                           {itemById[id]?.name || id}
-                          {itemById[id]?.seasonal ? <small className="seasonal-tag">{itemById[id].seasonal}</small> : null}
                           <button type="button" aria-label={`删除${itemById[id]?.name || id}`} onClick={() => removeItem(day, id)}>×</button>
                         </span>
                       ))}
@@ -801,7 +797,6 @@ export function XingchengBuilder({ library, lodgingOptions, dataSource = "local"
                           >
                             <span>
                               {item.name}
-                              {item.seasonal ? <small className="seasonal-tag">{item.seasonal}</small> : null}
                             </span>
                             {item.duration && <em>{item.duration}</em>}
                           </button>
@@ -909,7 +904,6 @@ export function XingchengBuilder({ library, lodgingOptions, dataSource = "local"
                                     onChange={() => togglePhoto(day, id)}
                                   />
                                   <span>{item.name}</span>
-                                  {item.seasonal ? <small className="seasonal-tag">{item.seasonal}</small> : null}
                                   {!ready && <small>图片待补</small>}
                                 </span>
                               </label>

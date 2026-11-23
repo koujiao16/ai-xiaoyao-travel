@@ -7,7 +7,7 @@ export type { LibraryItem };
 
 export const routeName = (item?: LibraryItem | null) => {
   if (!item) return "";
-  return item.seasonal ? `${item.name}（${item.seasonal}）` : item.name;
+  return item.name;
 };
 
 export const baseLibrary: LibraryItem[] = [
@@ -232,7 +232,7 @@ export const hanzhongLibrary: LibraryItem[] = [
   { id: "qingmuchuan-ancient-town", name: "青木川古镇", region: "汉中", keywords: ["青木川", "青木川古镇", "宁强", "汉中"], duration: "约2小时", description: "青木川古镇位于宁强县陕甘川交界处，保留了较完整的传统街巷、民居和商号建筑。这里兼具边地商贸历史与多元民俗风情，适合慢游古镇、感受山地人文。", kind: "景点" },
   { id: "foping-panda-valley", name: "佛坪熊猫谷", region: "汉中", keywords: ["佛坪熊猫谷", "熊猫谷", "佛坪", "汉中"], duration: "约2.5小时", description: "佛坪熊猫谷位于秦岭南麓，是亲近秦岭生态和了解大熊猫栖息环境的特色景区。除大熊猫相关科普外，还可观赏金丝猴、羚牛等秦岭野生动物及森林溪谷景观。", kind: "景点" },
   { id: "tianhan-wetland-park", name: "天汉湿地公园", region: "汉中", keywords: ["天汉湿地公园", "天汉湿地", "汉江湿地", "汉中"], duration: "约1小时", description: "天汉湿地公园沿汉江而建，是汉中城区休闲观景的重要滨水空间。傍晚可漫步江畔，欣赏一江两岸的城市风光、湿地景观与慢生活氛围。", kind: "景点" },
-  { id: "hanzhong-rapeseed-flowers", name: "汉中油菜花海", region: "汉中", keywords: ["汉中油菜花海", "油菜花", "汉中油菜花", "春季限定", "汉中"], duration: "约2小时", description: "汉中油菜花海为春季限定景观。每年三至四月，汉中盆地与丘陵田野连片金黄，适合踏青、摄影和乡村观光；具体花期以当年气候和官方信息为准。", kind: "景点", seasonal: "春季限定" },
+  { id: "hanzhong-rapeseed-flowers", name: "汉中油菜花海", region: "汉中", keywords: ["汉中油菜花海", "油菜花", "汉中油菜花", "春季限定", "汉中"], duration: "约2小时", description: "汉中油菜花海为春季限定景观。每年三至四月，汉中盆地与丘陵田野连片金黄，适合踏青、摄影和乡村观光；具体花期以当年气候和官方信息为准。", kind: "景点" },
   { id: "foping-nature-reserve", name: "佛坪国家级自然保护区", region: "汉中", keywords: ["佛坪国家级自然保护区", "佛坪自然保护区", "佛坪保护区", "佛坪", "汉中"], duration: "约3小时", description: "佛坪国家级自然保护区是秦岭大熊猫及多种珍稀野生动物的重要栖息地，以完整森林生态系统和生物多样性著称。应以生态科普、保护教育和规范游览为主。", kind: "景点" },
 ];
 
@@ -480,4 +480,4 @@ export const henanLibrary: LibraryItem[] = [
 
 export const fallbackLibrary: LibraryItem[] = [...baseLibrary, ...additionalLibrary, ...ankangLibrary, ...hanzhongLibrary, ...shangluoLibrary, ...qinlingAroundLibrary, ...henanLibrary];
 
-export const fallbackLodgingCityOptions = ["西安", "华山", "临潼", "延安", "壶口", "汉中", "安康", "商洛", "宝鸡", "郑州", "洛阳", "三门峡", "开封", "登封", "长春", "二道白河", "延吉", "不住宿"] as const;
+export const fallbackLodgingCityOptions = ["西安", "华山", "临潼", "延安", "壶口", "汉中", "安康", "商洛", "宝鸡", "郑州", "洛阳", "三门峡", "开封", "登封", "长春", "吉林", "二道白河", "延吉", "松江河", "和龙", "图们", "珲春", "哈尔滨", "亚布力", "雪乡", "沈阳", "大连", "本溪", "鞍山", "丹东", "盘锦", "不住宿"] as const;

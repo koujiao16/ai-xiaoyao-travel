@@ -1,4 +1,5 @@
 import type { LibraryItem } from "@/lib/xingcheng/types";
+import { northeastClassics } from "./northeast-classics";
 const rows = [
   ["ne-jilin-rime", "吉林雾凇长廊", "吉林", ["雾凇长廊", "阿什哈达雾凇", "吉林雾凇"], "沿松花江岸漫步，欣赏低温与水汽共同形成的雾凇景观。枝条上的冰晶、江面雾气与沿岸林木相映，是冬日摄影的特色题材。雾凇形成受天气影响，实际观赏效果以当天情况为准。"],
   ["ne-changbai-ski", "长白山滑雪体验", "二道白河", ["长白山滑雪", "滑雪体验", "滑雪"], "在长白山地区体验冬季滑雪，感受雪道与山林间的冰雪乐趣。具体雪场、滑雪时长、雪具及教练服务按所选套餐安排，不默认包含。初学者请遵守雪场安全指引。"],
@@ -12,7 +13,7 @@ const rows = [
   ["ne-changchun-ice-world", "长春冰雪新天地", "长春", ["长春冰雪新天地", "冰雪新天地"], "在长春冰雪新天地欣赏大型冰雪建筑与冬季游乐场景，体验冰雕、灯光和冰雪娱乐相结合的季节氛围。开放时间、夜场灯光及游乐项目受雪季和天气影响，以当季公告为准。"],
   ["ne-changchun-zoo", "长春动植物公园", "长春", ["长春动植物园", "长春动植物公园"], "漫步长春动植物公园，结合动物观赏、园林游览与园内主题活动，感受城市公园的休闲氛围。动物展区、夜游及演出按公园实际开放安排，不默认包含特别场次或收费体验。"],
 ] as const;
-export const northeastLibrary: LibraryItem[] = rows.map(([id, name, city, keywords, description]) => ({
+export const northeastLibrary: LibraryItem[] = [...rows.map(([id, name, city, keywords, description]): LibraryItem => ({
   id, name, city, province: "吉林", region: city, keywords: [...keywords], description,
   duration: "", kind: "景点", category: "其他",
   ...(["ne-changbai-north", "ne-yanji-west-market"].includes(id) ? {
@@ -20,4 +21,4 @@ export const northeastLibrary: LibraryItem[] = rows.map(([id, name, city, keywor
     imageCredit: "EditQ / Wikimedia Commons / CC BY-SA 4.0（已裁切转换；长白山图为非雪季实景）",
     imageLicenseSource: "https://commons.wikimedia.org/wiki/File:" + (id === "ne-changbai-north" ? "Changbai_Waterfall_5.jpg" : "West_Market_entrance.jpg"),
   } : {}),
-}));
+})), ...northeastClassics];

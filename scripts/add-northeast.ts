@@ -17,7 +17,7 @@ async function main() {
     if (result.error) throw result.error;
     console.log("新增景区", item.name);
   }
-  for (const city of ["长春", "二道白河", "延吉"]) {
+  for (const city of [...new Set(northeastLibrary.map(item => item.city!))]) {
     const old = await client.from("accommodations").select("id").eq("name", city);
     if (old.error) throw old.error;
     if (old.data?.length) continue;
