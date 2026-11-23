@@ -1,9 +1,10 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
+import Image from "next/image";
 import { parsePrices } from "@/lib/xingcheng/review-pricing";
 import type { QuotePriceItem } from "@/lib/xingcheng/quote-pricing";
 import { getProjectQuotePrices } from "@/lib/xingcheng/quote-pricing";
-type Review = { id: string; name: string; description: string; province: string; city: string; keywords: string[]; created_at: string; published: boolean };
+type Review = { id: string; name: string; description: string; province: string; city: string; region?: string; keywords: string[]; created_at: string; published: boolean; reviewImage?: string; oldImage?: string; image_url?: string };
 export function AttractionReviews() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [existing, setExisting] = useState<Review[]>([]);
@@ -24,10 +25,24 @@ export function AttractionReviews() {
     catch (e) { setMessage(e instanceof Error ? e.message : "保存失败"); }
     finally { setBusy(false); }
   };
-  return <div><h1 className="text-xl font-semibold">景区审核</h1><p className="my-3 text-sm">补齐省市并通过后，行程页和报价页均可搜索。未审核内容不公开。</p>
+  return <div><h1 className="text-xl font-semibold">景区审核</h1><p className="my-3 text-sm">申请自动继承前台区域；省市选填，审核通过后公开。</p>
     <div className="flex gap-3 my-4">{[["pending", "待审核"], ["approved", "已通过"], ["rejected", "已拒绝"]].map(([value, label]) => <button type="button" key={value} onClick={() => setStatus(value)} aria-pressed={status === value} className={status === value ? "rounded px-3 py-2 bg-[#8b3e2f] text-white" : "rounded px-3 py-2 bg-white"}>{label}</button>)}<button type="button" onClick={load}>刷新</button></div>
     <p role="status">{message}</p>
     {reviews.filter(row => row.keywords.includes("review-status:" + status)).map(row => {
+      if (row.keywords.includes("review-kind:image")) {
+        const targetId = targets[row.id] || row.keywords.find(k=>k.startsWith("image-target:"))?.slice(13) || "";
+        const oldImage = status === "pending" ? existing.find(x=>x.id===targetId)?.image_url || row.oldImage : row.oldImage;
+        return <article key={row.id} className="panel my-4 p-5 border rounded-xl bg-white"><h2 className="font-semibold">图片审核 · {row.name}</h2>
+          <div className="flex flex-wrap gap-5 my-4">
+            <div><p>原配图</p>{oldImage ? <Image unoptimized width={260} height={170} src={oldImage} alt="原配图" style={{objectFit:"contain"}} /> : <p>暂无原配图</p>}</div>
+            <div><p>用户上传</p>{row.reviewImage ? <Image unoptimized width={260} height={170} src={row.reviewImage} alt="用户上传待审图" style={{objectFit:"contain"}} /> : <p>图片链接暂不可用，请刷新</p>}</div>
+          </div>
+          {status === "pending" && <><label>关联景区<select className="block border p-2 my-3 w-full" disabled={busy} value={targetId} onChange={e=>setTargets(current=>({...current,[row.id]:e.target.value}))}><option value="">请选择已入库景区（自定义景区需先审核名称描述）</option>{existing.map(x=><option key={x.id} value={x.id}>{x.name}（{x.province} {x.city}）</option>)}</select></label><div className="flex gap-3">
+            <button className="rounded px-4 py-2 bg-[#54745e] text-white disabled:opacity-50" type="button" disabled={busy||!targetId||!row.reviewImage} onClick={()=>decide({...row}, "approve")}>同意并设为正式配图</button>
+            <button className="border rounded px-4 py-2" type="button" disabled={busy} onClick={()=>{if(window.confirm("拒绝此图片申请？"))void decide(row,"reject");}}>拒绝</button>
+          </div></>}
+        </article>;
+      }
       const norm = (s: string) => s.normalize("NFKC").replace(/\s+/g, "").toLowerCase();
       const matches = row.name.trim() ? existing.filter(x => x.id !== row.id && (norm(x.name).includes(norm(row.name)) || norm(row.name).includes(norm(x.name)))).slice(0, 5) : [];
       const charges = prices[row.id] ?? parsePrices(row.keywords) ?? [];
@@ -48,14 +63,15 @@ export function AttractionReviews() {
         }}><option value="">新增为正式景区</option>{existing.map(x => <option key={x.id} value={x.id}>关联已有：{x.name}（{x.province} {x.city}）</option>)}</select></label>}
         <label className="block mb-3">景区名称<input className="block w-full border rounded p-2" maxLength={100} disabled={status !== "pending" || busy} value={row.name} onChange={e => edit(row.id, { name: e.target.value })} /></label>
         <label className="block mb-3">描述<textarea style={{ background: "white", color: "#302a25" }} className="block w-full border rounded p-2" rows={4} maxLength={5000} disabled={status !== "pending" || busy} value={row.description} onChange={e => edit(row.id, { description: e.target.value })} /></label>
-        <div className="flex flex-wrap gap-3 mb-4">{(["province", "city"] as const).map(field => <label key={field}>{field === "province" ? "省份" : "城市"}<input className="block border rounded p-2" maxLength={50} disabled={status !== "pending" || busy} value={row[field]} onChange={e => edit(row.id, { [field]: e.target.value })} /></label>)}</div>
+        <label className="block mb-3">所属区域<select className="block border rounded p-2" disabled={status !== "pending" || busy} value={row.region === "东北" || row.region === "陕西＋河南" ? row.region : ""} onChange={e=>edit(row.id,{region:e.target.value})}><option value="">请选择区域（旧申请）</option><option value="东北">东北</option><option value="陕西＋河南">陕西＋河南</option></select></label>
+        <div className="flex flex-wrap gap-3 mb-4">{(["province", "city"] as const).map(field => <label key={field}>{field === "province" ? "省份（选填）" : "城市（选填）"}<input className="block border rounded p-2" maxLength={50} disabled={status !== "pending" || busy} value={row[field]} onChange={e => edit(row.id, { [field]: e.target.value })} /></label>)}</div>
         <div className="my-3"><b>门票及关联配套</b>{charges.map((p, index) => <div key={index} className="flex flex-wrap gap-2 my-2">
           <span>{p.group === "ticket" ? "门票" : "配套"}</span><input className="border rounded p-2" disabled={status !== "pending" || busy} value={p.name} onChange={e => patchPrice(index, { name: e.target.value })} placeholder="例如一级索道往返" />
           <input aria-label="配套价格" type="number" min="0" className="border rounded p-2 w-28" disabled={status !== "pending" || busy} value={p.price} onChange={e => patchPrice(index, { price: Number(e.target.value) })} />
           <select className="border p-2" disabled={status !== "pending" || busy} value={p.mode} onChange={e => patchPrice(index, { mode: e.target.value as QuotePriceItem["mode"] })}><option value="perPerson">／人</option><option value="perGroup">／团</option></select>
           {status === "pending" && <button type="button" disabled={busy} onClick={() => setPrices(current => ({ ...current, [row.id]: charges.filter((_, i) => i !== index) }))}>×</button>}
         </div>)}{status === "pending" && <div className="flex gap-3 my-3">{(["ticket", "extra"] as const).map(group => <button key={group} type="button" disabled={busy} onClick={() => setPrices(current => ({ ...current, [row.id]: [...charges, { name: "", price: 0, group, mode: "perPerson", selected: true }] }))}>＋{group === "ticket" ? "门票" : "关联配套"}</button>)}</div>}</div>
-        {status === "pending" && <div className="flex gap-3"><button type="button" disabled={busy || !row.name.trim() || (!row.description.trim() && !row.keywords.includes("review-kind:price")) || !row.province.trim() || !row.city.trim()} className="rounded px-4 py-2 bg-[#54745e] text-white disabled:opacity-50" onClick={() => decide(row, "approve")}>同意并入库</button><button type="button" disabled={busy} className="rounded border px-4 py-2" onClick={() => { if (window.confirm("确认拒绝？")) void decide(row, "reject"); }}>拒绝</button></div>}
+        {status === "pending" && <div className="flex gap-3"><button type="button" disabled={busy || !row.name.trim() || (!row.description.trim() && !row.keywords.includes("review-kind:price"))} className="rounded px-4 py-2 bg-[#54745e] text-white disabled:opacity-50" onClick={() => decide(row, "approve")}>同意并入库</button><button type="button" disabled={busy} className="rounded border px-4 py-2" onClick={() => { if (window.confirm("确认拒绝？")) void decide(row, "reject"); }}>拒绝</button></div>}
       </article>;
     })}
     {!reviews.some(row => row.keywords.includes("review-status:" + status)) && <p className="my-6">暂无此类申请</p>}

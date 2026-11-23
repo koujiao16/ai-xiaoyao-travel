@@ -4,7 +4,7 @@ import "./xingcheng.css";
 
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { LibraryItem } from "@/lib/xingcheng/types";
 import { createCustomProject, isCustomProject } from "@/lib/xingcheng/custom-project";
 import { ReviewDot } from "@/components/admin/ReviewDot";
@@ -48,7 +48,14 @@ export function XingchengBuilder({ library, lodgingOptions, dataSource = "local"
   const [tripName, setTripName] = useState("西安华山3日游");
   const [selectedRegion, setSelectedRegion] = useState<TravelRegionFilter>(DEFAULT_TRAVEL_REGION);
   const [customProjects, setCustomProjects] = useState<LibraryItem[]>([]);
-  const safeLibrary = useMemo(() => [...library, ...customProjects], [library, customProjects]);
+  const [localPhotos, setLocalPhotos] = useState<Record<string, { file: File; url: string }>>({});
+  const photoRef = useRef<Record<string, { file: File; url: string }>>({});
+  const photoInput = useRef<HTMLInputElement>(null);
+  const uploadTarget = useRef("");
+  const [imageRetry, setImageRetry] = useState(false);
+  const [imageSubmitting, setImageSubmitting] = useState(false);
+  useEffect(() => () => { Object.values(photoRef.current).forEach(p => URL.revokeObjectURL(p.url)); }, []);
+  const safeLibrary = useMemo(() => [...library, ...customProjects].map(item => localPhotos[item.id] ? { ...item, image: localPhotos[item.id].url, imageCredit: "", imageLicenseSource: "" } : item), [library, customProjects, localPhotos]);
   const safeLodging = useMemo(
     () => (lodgingOptions.length ? lodgingOptions : [NO_LODGING_LABEL]),
     [lodgingOptions],
@@ -78,6 +85,51 @@ export function XingchengBuilder({ library, lodgingOptions, dataSource = "local"
   const [wordScript, setWordScript] = useState<"simplified" | "hongkongTraditional">("simplified");
   const [exporting, setExporting] = useState(false);
   const [message, setMessage] = useState("");
+  const pickImage = (id: string) => { uploadTarget.current = id; photoInput.current?.click(); };
+  const chooseImage = async (file?: File) => {
+    const id = uploadTarget.current;
+    if (!file || !id) return;
+    if (!["image/jpeg","image/png","image/webp"].includes(file.type) || file.size > 8 * 1024 * 1024) { setMessage("请上传8MB以内的JPG、PNG或WebP"); return; }
+    try {
+      const bitmap = await createImageBitmap(file);
+      const scale = Math.min(1, 1600 / Math.max(bitmap.width, bitmap.height));
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.max(1, Math.round(bitmap.width * scale)); canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+      const ctx = canvas.getContext("2d"); if (!ctx) throw Error();
+      ctx.fillStyle = "#fff"; ctx.fillRect(0,0,canvas.width,canvas.height); ctx.drawImage(bitmap,0,0,canvas.width,canvas.height); bitmap.close();
+      const blob = await new Promise<Blob>((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(Error()),"image/jpeg",.85));
+      if (blob.size > 3000000) throw Error();
+      const photo = { file: new File([blob], "photo.jpg", { type: "image/jpeg" }), url: URL.createObjectURL(blob) };
+      if (photoRef.current[id]) URL.revokeObjectURL(photoRef.current[id].url);
+      photoRef.current = { ...photoRef.current, [id]: photo }; setLocalPhotos(photoRef.current);
+      setBrokenImages(current => { const next = { ...current }; delete next[id]; return next; });
+      setMessage("图片已用于本次行程；请勾选配图，生成文档时提交审核");
+    } catch { setMessage("图片无法读取，请换一张图片"); }
+  };
+  const undoImage = (id: string) => {
+    if (photoRef.current[id]) URL.revokeObjectURL(photoRef.current[id].url);
+    const next = { ...photoRef.current }; delete next[id]; photoRef.current = next; setLocalPhotos(next);
+    setBrokenImages(current => { const next = { ...current }; delete next[id]; return next; });
+    if (![...library, ...customProjects].find(item=>item.id===id)?.image) setDays(current=>current.map(day=>({...day,photoItems:day.photoItems.filter(x=>x!==id)})));
+  };
+  const submitPhotoReviews = async () => {
+    setImageSubmitting(true);
+    let failed = false;
+    const ids = new Set(days.flatMap(day=>day.items));
+    for (const [id, photo] of Object.entries(photoRef.current)) {
+      if (!ids.has(id)) continue;
+      try {
+        const form = new FormData(); form.set("slug",id); form.set("name",itemById[id]?.name || id); form.set("file",photo.file);
+        const r = await fetch("/api/image-submissions",{method:"POST",body:form,signal:AbortSignal.timeout(30000)});
+        if (!r.ok) throw Error();
+      } catch { failed = true; }
+    }
+    setImageRetry(failed); setImageSubmitting(false);
+    if (Object.keys(photoRef.current).some(id=>ids.has(id))) {
+      setMessage(current=>current+(failed ? "；部分图片未提交成功，请重试" : "；图片已提交审核（重复图片不重复提交）"));
+      window.dispatchEvent(new Event("reviews-changed"));
+    }
+  };
   const [reviewRetry, setReviewRetry] = useState(false);
   const [submittingReview, setSubmittingReview] = useState(false);
   const submitCustomReviews = async () => {
@@ -90,7 +142,7 @@ export function XingchengBuilder({ library, lodgingOptions, dataSource = "local"
     try {
       const response = await fetch("/api/attraction-submissions", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ items }), signal: AbortSignal.timeout(15000),
+        body: JSON.stringify({ items, region: selectedRegion }), signal: AbortSignal.timeout(15000),
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error);
@@ -616,6 +668,7 @@ export function XingchengBuilder({ library, lodgingOptions, dataSource = "local"
       URL.revokeObjectURL(url);
       setMessage("Word文档已生成");
       await submitCustomReviews();
+      await submitPhotoReviews();
     } catch {
       setMessage("文档生成失败，请重试");
     } finally {
@@ -873,6 +926,7 @@ export function XingchengBuilder({ library, lodgingOptions, dataSource = "local"
                       <strong>行程图片</strong>
                       <span>最多选择3张，统一放在当天文字最后</span>
                     </div>
+                    <small>上传照片请确认拥有使用授权；照片生成文档时提交后台审核。</small>
                     <div className="photo-options">
                       {day.items.length ? (
                         day.items
@@ -880,7 +934,7 @@ export function XingchengBuilder({ library, lodgingOptions, dataSource = "local"
                             const item = itemById[id];
                             const ready = Boolean(item.image) && !brokenImages[item.id];
                             return (
-                              <label key={id} className={`${ready ? "photo-card" : "photo-pending"}`}>
+                              <label key={id} className={`${ready ? "photo-card" : "photo-pending"}`} onClick={event=>{if(!ready){event.preventDefault();pickImage(id);}}}>
                                 {ready && item.image ? (
                                   <span className="photo-card-media">
                                     <Image
@@ -905,6 +959,8 @@ export function XingchengBuilder({ library, lodgingOptions, dataSource = "local"
                                   />
                                   <span>{item.name}</span>
                                   {!ready && <small>图片待补</small>}
+                                  <button className="photo-upload-button" type="button" onClick={event=>{event.preventDefault();event.stopPropagation();pickImage(id);}}>{localPhotos[id] ? "更换" : "上传图片"}</button>
+                                  {localPhotos[id] && <button className="photo-upload-button" type="button" onClick={event=>{event.preventDefault();event.stopPropagation();undoImage(id);}}>撤销</button>}
                                 </span>
                               </label>
                             );
@@ -943,12 +999,14 @@ export function XingchengBuilder({ library, lodgingOptions, dataSource = "local"
       </section>
 
       <footer className="action-bar">
+        <input ref={photoInput} type="file" accept="image/jpeg,image/png,image/webp" hidden onChange={event=>{void chooseImage(event.target.files?.[0]);event.target.value="";}} />
         <div>
           <strong>{tripName || "未命名行程"}</strong>
           <span>{days.length} 天 · 共 {days.reduce((sum, day) => sum + day.items.length, 0)} 个项目</span>
         </div>
         {message && <p className={message.includes("已生成") ? "success-message" : "status-message"}>{message}</p>}
         {reviewRetry && <button type="button" disabled={submittingReview} onClick={submitCustomReviews}>{submittingReview ? "正在提交…" : "重试提交景区审核"}</button>}
+        {imageRetry && <button type="button" disabled={imageSubmitting} onClick={submitPhotoReviews}>{imageSubmitting ? "正在提交…" : "重试提交图片审核"}</button>}
         <label className="word-script-select">
           <span>输出文字</span>
           <select value={wordScript} onChange={(event) => setWordScript(event.target.value as typeof wordScript)}>

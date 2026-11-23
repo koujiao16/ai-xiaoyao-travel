@@ -20,6 +20,7 @@ export async function POST(request: Request) {
     if (raw.length > 80000) return NextResponse.json({ error: "提交内容过长" }, { status: 413 });
     const body = JSON.parse(raw);
     if (!Array.isArray(body.items) || body.items.length > 40) return NextResponse.json({ error: "每次最多提交40项" }, { status: 400 });
+    const submittedRegion = ["东北", "陕西＋河南"].includes(body.region) ? body.region : "";
     const items = body.items.map((item: { name?: unknown; description?: unknown; price?: unknown; mode?: unknown }) => {
       if (typeof item.name !== "string") throw new Error("请填写景区名称");
       const name = item.name.trim(), description = typeof item.description === "string" ? item.description.trim() : "";
@@ -38,7 +39,7 @@ export async function POST(request: Request) {
       const key = hash(item.name.normalize("NFKC").toLowerCase().replace(/\s+/g, "") + "\n" + (item.prices ? JSON.stringify(item.prices) : item.description.normalize("NFKC").replace(/\s+/g, "")));
       const slug = "review-" + key;
       const { data, error } = await service.from("attractions").upsert({
-        name: item.name, description: item.description, slug, published: false, province: "", city: "", region: "",
+        name: item.name, description: item.description, slug, published: false, province: "", city: "", region: submittedRegion,
         category: "其他", kind: "景点", keywords: ["review-status:pending", "review-ip:" + ip, ...(item.prices ? ["review-kind:price", PRICE_TAG + JSON.stringify(item.prices)] : [])],
       }, { onConflict: "slug", ignoreDuplicates: true }).select("id");
       if (error) throw error;

@@ -240,6 +240,8 @@ main.trip-builder { min-height: 100vh; padding-bottom: 9rem; }
 .trip-builder .error-note { margin: 7px 2px 0; color: #b23f38; font-size: 12px; }
 
 .trip-builder .project-description-editors { margin-top: 10px; display: grid; gap: 6px; }
+.trip-builder .photo-card-meta{flex-wrap:wrap}
+.trip-builder .photo-upload-button{position:relative;z-index:1;padding:2px 4px;border:0;border-radius:4px;background:#f4e9df;color:#8b3e2f;font-size:10px;cursor:pointer}
 .trip-builder .project-description-editor { border: 1px solid #e4d9ce; border-radius: 8px; padding: 8px 11px; background: #fffdf9; }
 .trip-builder .project-description-editor summary { cursor: pointer; color: #8b4939; font-size: 12px; }
 .trip-builder .project-description-editor textarea { display: block; width: 100%; margin-top: 9px; padding: 10px; border: 1px solid #ded4c9; border-radius: 6px; background: #fff; color: #302a25; color-scheme: light; font: inherit; font-size: 13px; line-height: 1.6; resize: vertical; }

@@ -163,7 +163,7 @@ export function CompactQuoteBuilder({ library }: { library: LibraryItem[] }) {
     if (!items.length) return;
     setPriceReviewBusy(true);
     try {
-      const response = await fetch("/api/attraction-submissions", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ items }), signal: AbortSignal.timeout(15000) });
+      const response = await fetch("/api/attraction-submissions", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ items, region: selectedRegion }), signal: AbortSignal.timeout(15000) });
       const result = await response.json();
       if (!response.ok) throw Error(result.error);
       setPriceReviewRetry(false);
