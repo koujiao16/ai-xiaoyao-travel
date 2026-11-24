@@ -38,3 +38,4 @@
 .compact-quote .price-pill-toggle-label{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 .compact-quote .price-pill>input,.compact-quote .price-pill>.remove{position:relative;z-index:1}
 .compact-quote .price-pill>input[readonly],.compact-quote .price-pill>span{pointer-events:none}
+.compact-quote .price-pill>select{position:relative;z-index:1;flex:1;min-width:100px;max-width:270px;border:0;background:transparent;color:inherit;font:inherit;cursor:pointer;text-overflow:ellipsis}

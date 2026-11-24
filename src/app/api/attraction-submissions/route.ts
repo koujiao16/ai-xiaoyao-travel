@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { NextResponse } from "next/server";
 import { createServiceSupabaseClient } from "@/lib/admin/server-media";
 import { PRICE_TAG, validatePrices } from "@/lib/xingcheng/review-pricing";
+import { resolveTravelRegion } from "@/lib/xingcheng/travel-regions";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -20,7 +21,7 @@ export async function POST(request: Request) {
     if (raw.length > 80000) return NextResponse.json({ error: "提交内容过长" }, { status: 413 });
     const body = JSON.parse(raw);
     if (!Array.isArray(body.items) || body.items.length > 40) return NextResponse.json({ error: "每次最多提交40项" }, { status: 400 });
-    const submittedRegion = ["东北", "陕西＋河南"].includes(body.region) ? body.region : "";
+    const submittedRegion = resolveTravelRegion({ region: typeof body.region === "string" ? body.region : "" }) || "";
     const items = body.items.map((item: { name?: unknown; description?: unknown; price?: unknown; mode?: unknown }) => {
       if (typeof item.name !== "string") throw new Error("请填写景区名称");
       const name = item.name.trim(), description = typeof item.description === "string" ? item.description.trim() : "";

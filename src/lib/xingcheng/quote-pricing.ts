@@ -1,11 +1,21 @@
 export type QuotePriceGroup = "ticket" | "extra";
 export type QuotePriceMode = "perPerson" | "perGroup";
+export type QuotePriceOption = { name: string; price: number; mode?: QuotePriceMode; includedPeople?: number; additionalPersonPrice?: number };
 export type QuotePriceItem = {
   name: string; price: number; group: QuotePriceGroup; mode: QuotePriceMode; selected: boolean;
   includedPeople?: number;
   additionalPersonPrice?: number;
   pricePending?: boolean;
+  options?: QuotePriceOption[];
 };
+
+/** Alternative routes/ticket types occupy ONE cost row, never multiple totals. */
+export function chooseQuotePriceOption(item: QuotePriceItem, index: number): QuotePriceItem {
+  const option = item.options?.[index];
+  if (!option) return item;
+  return { ...item, ...option, mode: option.mode || item.mode, pricePending: false,
+    includedPeople: option.includedPeople, additionalPersonPrice: option.additionalPersonPrice };
+}
 
 /** Ordinary exterior/public-area visits only, never paid exhibitions or experiences.
  * Xingqing admission: https://www.xingqinggong.com/

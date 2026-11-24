@@ -4,6 +4,7 @@ import Image from "next/image";
 import { parsePrices } from "@/lib/xingcheng/review-pricing";
 import type { QuotePriceItem } from "@/lib/xingcheng/quote-pricing";
 import { getProjectQuotePrices } from "@/lib/xingcheng/quote-pricing";
+import { resolveTravelRegion, TRAVEL_REGIONS } from "@/lib/xingcheng/travel-regions";
 type Review = { id: string; name: string; description: string; province: string; city: string; region?: string; keywords: string[]; created_at: string; published: boolean; reviewImage?: string; oldImage?: string; image_url?: string };
 export function AttractionReviews() {
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -63,7 +64,7 @@ export function AttractionReviews() {
         }}><option value="">新增为正式景区</option>{existing.map(x => <option key={x.id} value={x.id}>关联已有：{x.name}（{x.province} {x.city}）</option>)}</select></label>}
         <label className="block mb-3">景区名称<input className="block w-full border rounded p-2" maxLength={100} disabled={status !== "pending" || busy} value={row.name} onChange={e => edit(row.id, { name: e.target.value })} /></label>
         <label className="block mb-3">描述<textarea style={{ background: "white", color: "#302a25" }} className="block w-full border rounded p-2" rows={4} maxLength={5000} disabled={status !== "pending" || busy} value={row.description} onChange={e => edit(row.id, { description: e.target.value })} /></label>
-        <label className="block mb-3">所属区域<select className="block border rounded p-2" disabled={status !== "pending" || busy} value={row.region === "东北" || row.region === "陕西＋河南" ? row.region : ""} onChange={e=>edit(row.id,{region:e.target.value})}><option value="">请选择区域（旧申请）</option><option value="东北">东北</option><option value="陕西＋河南">陕西＋河南</option></select></label>
+        <label className="block mb-3">所属区域<select className="block border rounded p-2" disabled={status !== "pending" || busy} value={resolveTravelRegion(row) || ""} onChange={e=>edit(row.id,{region:e.target.value})}><option value="">请选择区域（旧申请）</option>{TRAVEL_REGIONS.map(region => <option key={region.id} value={region.id}>{region.id}</option>)}</select></label>
         <div className="flex flex-wrap gap-3 mb-4">{(["province", "city"] as const).map(field => <label key={field}>{field === "province" ? "省份（选填）" : "城市（选填）"}<input className="block border rounded p-2" maxLength={50} disabled={status !== "pending" || busy} value={row[field]} onChange={e => edit(row.id, { [field]: e.target.value })} /></label>)}</div>
         <div className="my-3"><b>门票及关联配套</b>{charges.map((p, index) => <div key={index} className="flex flex-wrap gap-2 my-2">
           <span>{p.group === "ticket" ? "门票" : "配套"}</span><input className="border rounded p-2" disabled={status !== "pending" || busy} value={p.name} onChange={e => patchPrice(index, { name: e.target.value })} placeholder="例如一级索道往返" />

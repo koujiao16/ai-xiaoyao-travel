@@ -7,7 +7,7 @@ import { ReviewDot } from "@/components/admin/ReviewDot";
 import { LodgingSearch } from "@/components/ui/LodgingSearch";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { effectiveQuotePrice, getProjectQuotePrices, isKnownFreeTicket, type QuotePriceItem, type QuotePriceGroup, type QuotePriceMode } from "@/lib/xingcheng/quote-pricing";
+import { chooseQuotePriceOption, effectiveQuotePrice, getProjectQuotePrices, isKnownFreeTicket, type QuotePriceItem, type QuotePriceGroup, type QuotePriceMode } from "@/lib/xingcheng/quote-pricing";
 import type { LibraryItem } from "@/lib/xingcheng/types";
 import { createCustomProject, isCustomProject } from "@/lib/xingcheng/custom-project";
 import "./compact-quote.css";
@@ -283,7 +283,10 @@ export function CompactQuoteBuilder({ library }: { library: LibraryItem[] }) {
 
   const pricePills = (items: PriceItem[], set: React.Dispatch<React.SetStateAction<PriceItem[]>>, group: QuotePriceGroup) => <>
     {items.map((item) => <div className="price-pill" key={item.id}>
-      <input aria-label="项目名称" tabIndex={item.locked ? -1 : undefined} readOnly={item.locked} value={item.name} onChange={(event) => updatePrice(set, item.id, { name: event.target.value })} />
+      {item.options ? <select aria-label={`${item.name}可选票种或路线`} value={item.pricePending ? "" : String(item.options.findIndex(option => option.name === item.name))} onChange={event => updatePrice(set, item.id, chooseQuotePriceOption(item, Number(event.target.value)))}>
+        <option value="" disabled>请选择{group === "ticket" ? "票种" : "路线或服务"}</option>
+        {item.options.map((option, index) => <option key={option.name} value={index}>{option.name}</option>)}
+      </select> : <input aria-label="项目名称" tabIndex={item.locked ? -1 : undefined} readOnly={item.locked} value={item.name} onChange={(event) => updatePrice(set, item.id, { name: event.target.value })} />}
       <input aria-label="价格" type="number" min="0" value={item.pricePending ? "" : item.price} placeholder="待填价" onChange={(event) => updatePrice(set, item.id, { price: asNumber(Number(event.target.value)), pricePending: event.target.value === "" })} onBlur={(event) => {
         if (item.group === "ticket" && event.target.value.trim() !== "" && Number(event.target.value) === 0) {
           set((current) => current.filter((line) => line.id !== item.id));
