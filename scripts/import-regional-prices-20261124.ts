@@ -4,12 +4,16 @@ import { createClient } from "@supabase/supabase-js";
 import { createHash } from "node:crypto";
 import { mkdir, writeFile } from "node:fs/promises";
 import { regionalPriceItems } from "./regional-prices-20261124";
+import { northeastPriceItems } from "./northeast-prices-20261124";
+import { resolveTravelRegion } from "../src/lib/xingcheng/travel-regions";
+import { descriptionSupplements } from "./description-supplements-20261124";
 import { PRICE_TAG, parsePrices, validatePrices } from "../src/lib/xingcheng/review-pricing";
 import { quotePriceCatalog, type QuotePriceItem } from "../src/lib/xingcheng/quote-pricing";
 
 config({path: ".env.local",quiet: true});
 const db = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!,process.env.SUPABASE_SECRET_KEY!,{auth:{persistSession:false}});
 const apply = process.argv.includes("--apply");
+const importItems = process.argv.includes("--northeast") ? northeastPriceItems : regionalPriceItems;
 const norm = (s: string) => s.normalize("NFKC").replace(/[\s·（）()／/＋+—－-]/g,"").toLowerCase();
 type RecordRow = { id: string; name: string; slug: string; province: string; city: string; keywords: string[]; published: boolean; [key: string]: unknown };
 function feeKey(p: QuotePriceItem) {
@@ -45,8 +49,9 @@ async function main() {
   const {data,error} = await db.from("attractions").select("*").eq("published",true);
   if(error) throw error;
   const all = data as RecordRow[];
+  const descriptionPlans = process.argv.includes("--northeast") ? all.filter(row => descriptionSupplements[row.slug] && (!String(row.description || "").trim() || String(row.description).includes("可结合当地行程安排参观，了解景区的自然景观或历史文化"))).map(row => ({row,description:descriptionSupplements[row.slug]})) : [];
   const used = new Set<string>();
-  const plans = regionalPriceItems.map(item=>{
+  const plans = importItems.map(item=>{
     const direct = all.filter(row=>row.slug===item.slug);
     const alias = all.filter(row=>row.province.replace(/省$/,"")===item.province && (norm(item.name)===norm(row.name) || (row.city===item.city && item.aliases.some(name=>norm(name)===norm(row.name)))));
     const matches = direct.length ? direct : alias;
@@ -63,8 +68,8 @@ async function main() {
   });
   const {data:lodgings,error:lodgingError} = await db.from("accommodations").select("id,name,city").eq("published",true);
   if(lodgingError)throw lodgingError;
-  const newCities = [...new Set(regionalPriceItems.map(x=>x.city))].filter(city=>!(lodgings||[]).some(x=>x.name===city));
-  const summary = {mode:apply?"apply":"dry-run",projects:plans.length,newAttractions:plans.filter(x=>!x.row).length,updatedAttractions:plans.filter(x=>x.row&&x.changed).length,unchangedAttractions:plans.filter(x=>!x.changed).length,newLodgingCities:newCities};
+  const newCities = [...new Set(importItems.map(x=>x.city))].filter(city=>!(lodgings||[]).some(x=>x.name===city));
+  const summary = {mode:apply?"apply":"dry-run",projects:plans.length,newAttractions:plans.filter(x=>!x.row).length,updatedAttractions:plans.filter(x=>x.row&&x.changed).length,unchangedAttractions:plans.filter(x=>!x.changed).length,descriptionSupplements:descriptionPlans.length,newLodgingCities:newCities};
   console.log(JSON.stringify(summary));
   const report = plans.map(p=>({name:p.item.name,province:p.item.province,city:p.item.city,action:!p.row?"新增":p.changed?"更新":"保留",prices:p.prices,old:p.old}));
   const fingerprint = createHash("sha256").update(JSON.stringify(report)).digest("hex");
@@ -72,12 +77,13 @@ async function main() {
   if(!apply) { if(process.argv.includes("--details"))console.log(JSON.stringify(report)); return; }
   const backupDir = "/private/tmp/xiaoyao-regional-import-" + Date.now();
   await mkdir(backupDir,{recursive:false,mode:0o700});
-  await writeFile(backupDir+"/before.json",JSON.stringify({fingerprint,attractions:plans.filter(p=>p.row&&p.changed).map(p=>p.row),newSlugs:plans.filter(p=>!p.row).map(p=>p.item.slug),newCities},null,2),{mode:0o600});
+  await writeFile(backupDir+"/before.json",JSON.stringify({fingerprint,attractions:plans.filter(p=>p.row&&p.changed).map(p=>p.row),descriptionRows:descriptionPlans.map(p=>p.row),newSlugs:plans.filter(p=>!p.row).map(p=>p.item.slug),newCities},null,2),{mode:0o600});
   await writeFile(backupDir+"/plan.json",JSON.stringify(report,null,2),{mode:0o600});
   console.log("写入前备份",backupDir);
   const touched: string[] = [];
   const created: string[] = [];
   const createdLodgings: string[] = [];
+  const descriptionIds: string[] = [];
   try {
     for (const p of plans.filter(p=>p.changed)) {
       if(p.row) {
@@ -89,7 +95,7 @@ async function main() {
         if(result.data?.length!==1)throw Error("更新冲突："+p.item.name);
         touched.push(p.row.id);
       } else {
-        const result = await db.from("attractions").insert({slug:p.item.slug,name:p.item.name,province:p.item.province,city:p.item.city,region:"陕豫晋",keywords:p.keywords,description:p.item.description,kind:"景点",category:category(p.item.name),published:true,sort_order:1300,seasonal_note:""}).select("id").single();
+        const result = await db.from("attractions").insert({slug:p.item.slug,name:p.item.name,province:p.item.province,city:p.item.city,region:resolveTravelRegion({province:p.item.province}),keywords:p.keywords,description:p.item.description,kind:"景点",category:category(p.item.name),published:true,sort_order:1300,seasonal_note:""}).select("id").single();
         if(result.error)throw result.error;
         created.push(result.data.id);
       }
@@ -99,14 +105,30 @@ async function main() {
       if(result.error)throw result.error;
       createdLodgings.push(result.data.id);
     }
+    for (const p of descriptionPlans) {
+      const current = await db.from("attractions").select("description").eq("id",p.row.id).single();
+      if(current.error || current.data.description !== p.row.description) throw Error("介绍被其他管理员修改，停止："+p.row.name);
+      const saved = await db.from("attractions").update({description:p.description}).eq("id",p.row.id).eq("description",String(p.row.description || "")).select("id");
+      if(saved.error || saved.data?.length!==1) throw Error("介绍保存失败："+p.row.name);
+      descriptionIds.push(p.row.id);
+    }
     for (const p of plans) {
       const checked = await db.from("attractions").select("keywords").eq("slug",p.row?.slug||p.item.slug).single();
       if(checked.error || JSON.stringify(parsePrices(checked.data.keywords))!==JSON.stringify(p.prices)) throw Error("写入复核失败："+p.item.name);
     }
-    await writeFile(backupDir+"/result.json",JSON.stringify({summary,fingerprint,touched,created,createdLodgings},null,2),{mode:0o600});
+    for(const p of descriptionPlans) {
+      const checked = await db.from("attractions").select("description").eq("id",p.row.id).single();
+      if(checked.error || checked.data.description!==p.description)throw Error("介绍复核失败："+p.row.name);
+    }
+    await writeFile(backupDir+"/result.json",JSON.stringify({summary,fingerprint,touched,created,createdLodgings,descriptionIds},null,2),{mode:0o600});
     console.log("写入并逐项复核完成",JSON.stringify(summary));
   } catch(error) {
     console.error("导入未完成，按本次精确目标恢复。");
+    for(const id of descriptionIds) {
+      const p = descriptionPlans.find(p=>p.row.id===id)!;
+      const restored = await db.from("attractions").update({description:p.row.description}).eq("id",id).eq("description",p.description);
+      if(restored.error)console.error("介绍恢复失败",id,restored.error.message);
+    }
     for(const id of touched) {
       const original = plans.find(p=>p.row?.id===id)!.row!;
       const rollback = await db.from("attractions").update({keywords:original.keywords}).eq("id",id);
