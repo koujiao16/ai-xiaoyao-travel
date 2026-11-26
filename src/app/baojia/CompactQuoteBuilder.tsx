@@ -9,6 +9,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { chooseQuotePriceOption, effectiveQuotePrice, getProjectQuotePrices, isKnownFreeTicket, type QuotePriceItem, type QuotePriceGroup, type QuotePriceMode } from "@/lib/xingcheng/quote-pricing";
 import type { LibraryItem } from "@/lib/xingcheng/types";
+import { calculateHotelCosts } from "@/lib/xingcheng/hotel-pricing";
 import { createCustomProject, isCustomProject } from "@/lib/xingcheng/custom-project";
 import "./compact-quote.css";
 import "./compact-itinerary.css";
@@ -17,7 +18,7 @@ import "./quote-controls.css";
 type DraftItem = { id: string; name: string; kind: string; province: string; city: string; day: number; quoteKey: string };
 type Draft = { details?: Record<number, DayDetails>; tripName?: string; items?: DraftItem[]; lodgings?: Array<{ name: string; day: number }> };
 type PriceItem = QuotePriceItem & { id: string; locked: boolean; sourceKey?: string };
-type Hotel = { id: string; name: string; roomRate: number; rooms: number; nights: number };
+type Hotel = { id: string; name: string; roomRate: number; nights: number };
 type Meal = { id: string; name: string; price: number; count: number };
 type GroupCost = { id: string; name: string; price: number; count: number; mode: QuotePriceMode };
 type DayDetails = { meals: string[]; lodging: string };
@@ -47,7 +48,7 @@ export function CompactQuoteBuilder({ library }: { library: LibraryItem[] }) {
   const [dayCount, setDayCount] = useState(3);
   const [queries, setQueries] = useState<Record<number, string>>({});
   const [dayDetails, setDayDetails] = useState<Record<number, DayDetails>>({});
-  const [remarks, setRemarks] = useState("此报价按实际人数核算，人数不同价格不同。\n以上报价为预估报价，实际成团前请再次核对相关费用。\n建议至少提前 15 天确定行程，以便预订酒店、车辆、导游及相关资源。\n报价不含行程以外的个人消费及自费项目。\n如产生单人入住，须按实际酒店价格补单房差。\n景区、演出、酒店等如遇官方价格政策调整，按实际产生费用为准。\n具体行程安排、酒店、车辆及导游，以最终确认单为准。");
+  const [remarks, setRemarks] = useState("此为预估报价，不含法定节假日，确认前请再次核实价格。\n酒店按双人入住核算，单人数可安排三人间；单独入住须补单房差。");
   const [exporting, setExporting] = useState(false);
   const [message, setMessage] = useState("");
   const [copyFallback, setCopyFallback] = useState("");
@@ -56,6 +57,9 @@ export function CompactQuoteBuilder({ library }: { library: LibraryItem[] }) {
   const [tickets, setTickets] = useState<PriceItem[]>([]);
   const [extras, setExtras] = useState<PriceItem[]>([]);
   const [hotels, setHotels] = useState<Hotel[]>([]);
+  const [singleSupplementOverride, setSingleSupplementOverride] = useState<number | null>(null);
+  const hotelCosts = calculateHotelCosts(hotels, travelers);
+  const singleSupplement = singleSupplementOverride ?? hotelCosts.singleSupplement;
   const [meals, setMeals] = useState<Meal[]>([{ id: uid(), name: "团餐", price: 0, count: 1 }]);
   const [vehicles, setVehicles] = useState<GroupCost[]>([]);
   const [guides, setGuides] = useState<GroupCost[]>([{ id: uid(), name: "中文导游", price: 0, count: 1, mode: "perGroup" }]);
@@ -88,7 +92,7 @@ export function CompactQuoteBuilder({ library }: { library: LibraryItem[] }) {
       const importedDetails: Record<number, DayDetails> = {};
       (draft.lodgings || []).forEach(({ name, day }) => { importedDetails[day] = { meals: [], lodging: name }; });
       setDayDetails(draft.details || importedDetails);
-      setHotels([...hotelNights.entries()].map(([name, nights]) => ({ id: uid(), name, roomRate: 0, rooms: Math.ceil(20 / 2), nights })));
+      setHotels([...hotelNights.entries()].map(([name, nights]) => ({ id: uid(), name, roomRate: 0, nights })));
       setVehicles([...new Set(sourceItems.filter((item) => item.kind !== "服务" ).map(vehicleLabel).filter(Boolean))].map((name) => ({ id: uid(), name, price: 0, count: 1, mode: "perGroup" })));
     } catch {
       // The blank version stays usable when a browser draft is incomplete.
@@ -190,7 +194,7 @@ export function CompactQuoteBuilder({ library }: { library: LibraryItem[] }) {
       const costs: Array<[string, string, string]> = [
         ["门票", selected(tickets), perPersonText(totals.ticket)],
         ["讲解及配套", selected(extras.map(item => ({ ...item, selected: true }))), perPersonText(totals.extra)],
-        ["住宿", hotels.map((item) => `${item.name} ${item.roomRate}/间/晚 × ${item.rooms}间 × ${item.nights}晚`).join("  ·  "), perPersonText(totals.hotel)],
+        ["住宿", hotels.map((item) => `${item.name} ${item.roomRate}/间/晚 × ${item.nights}晚 ÷ 2`).join("  ·  "), perPersonText(totals.hotel)],
         ["餐", meals.map((item) => `${item.name} ${item.price}/人 × ${item.count}餐`).join("  ·  "), perPersonText(totals.meal)],
         ["用车", vehicles.map((item) => `${item.name} ${item.price}/团 × ${item.count}`).join("  ·  "), perPersonText(totals.vehicle)],
         ["导游", guides.map((item) => `${item.name} ${item.price}${item.mode === "perGroup" ? "/团" : "/人"} × ${item.count}`).join("  ·  "), perPersonText(totals.guide)],
@@ -207,6 +211,7 @@ export function CompactQuoteBuilder({ library }: { library: LibraryItem[] }) {
         new Table({ width: { size: 10000, type: WidthType.DXA }, rows: [new TableRow({ children: [cell("项目", 1500, true), cell("核算", 6500, true), cell("人均", 2000, true)] }), ...costs.map(([name, detail, amount]) => new TableRow({ children: [cell(name, 1500, name === "共计"), cell(detail, 6500), cell(amount, 2000, name === "共计")] }))] }),
         new Paragraph({ spacing: { before: 220, after: 80 }, children: [new TextRun({ text: "备注", bold: true, color: "8B3E2F" })] }),
         ...remarks.split("\n").map((line) => new Paragraph({ spacing: { after: 70 }, children: [new TextRun({ text: line || " " })] })),
+        new Paragraph({ spacing: { after: 70 }, children: [new TextRun({ text: `单房差：${money.format(singleSupplement)}/人（单独入住另付）` })] }),
       ] }] });
       const blob = await Packer.toBlob(doc);
       const url = URL.createObjectURL(blob);
@@ -233,6 +238,7 @@ export function CompactQuoteBuilder({ library }: { library: LibraryItem[] }) {
         ["门票", names(tickets)],
         ["讲解及配套", names(extras.map(item => ({ ...item, selected: true })))],
         ["住宿", hotels.map(item => `${item.name || "参考酒店"}（${item.nights}晚）`).join("、") || "按最终确认安排"],
+        ["单房差", `${money.format(singleSupplement)}/人（单独入住另付）`],
         ["餐食", meals.map(item => item.name).join("、") || "不含，客人自理"],
         ["用车", vehicles.map(item => item.name).join("、") || "按行程安排"],
         ["导游", guides.map(item => item.name).join("、") || "按行程安排"],
@@ -270,7 +276,7 @@ export function CompactQuoteBuilder({ library }: { library: LibraryItem[] }) {
   const totals = useMemo(() => {
     const ticket = sectionTotal(tickets, travelers);
     const extra = sectionTotal(extras.map(item => ({ ...item, selected: true })), travelers);
-    const hotel = hotels.reduce((sum, item) => sum + item.roomRate * item.rooms * item.nights, 0);
+    const hotel = calculateHotelCosts(hotels, travelers).total;
     const meal = meals.reduce((sum, item) => sum + item.price * item.count * travelers, 0);
     const groupTotal = (items: GroupCost[]) => items.reduce((sum, item) => sum + item.price * item.count * (item.mode === "perPerson" ? travelers : 1), 0);
     const vehicle = groupTotal(vehicles);
@@ -315,14 +321,14 @@ export function CompactQuoteBuilder({ library }: { library: LibraryItem[] }) {
     <section className="quote-sheet">
       <CostRow travelers={travelers} title="门票" total={totals.ticket}><div className="pills">{pricePills(tickets, setTickets, "ticket")}</div></CostRow>
       <CostRow travelers={travelers} title="讲解及配套" total={totals.extra}><div className="cost-help-wrap"><div className="pills">{pricePills(extras, setExtras, "extra")}</div></div></CostRow>
-      <CostRow travelers={travelers} title="住宿" total={totals.hotel}><div className="multi-lines">{hotels.map((hotel) => <div className="hotel-inline" key={hotel.id}><input value={hotel.name} placeholder="酒店名称" onChange={(event) => updateHotel(hotel.id, { name: event.target.value })} /><input type="number" min="0" value={hotel.roomRate || ""} placeholder="房价" onChange={(event) => updateHotel(hotel.id, { roomRate: asNumber(Number(event.target.value)) })} /><span>／间／晚 ×</span><input type="number" min="1" value={hotel.rooms} onChange={(event) => updateHotel(hotel.id, { rooms: Math.max(1, asNumber(Number(event.target.value), 1)) })} /><span>间 ×</span><input type="number" min="1" value={hotel.nights} onChange={(event) => updateHotel(hotel.id, { nights: Math.max(1, asNumber(Number(event.target.value), 1)) })} /><span>晚</span><button className="remove" type="button" onClick={() => setHotels((current) => current.filter((item) => item.id !== hotel.id))}>×</button></div>)}<button className="add-inline" type="button" onClick={() => setHotels((current) => [...current, { id: uid(), name: "", roomRate: 0, rooms: Math.ceil(travelers / 2), nights: 1 }])}>＋</button></div></CostRow>
+      <CostRow travelers={travelers} title="住宿" total={totals.hotel}><div className="multi-lines">{hotels.map((hotel) => <div className="hotel-inline" key={hotel.id}><input aria-label="酒店名称" value={hotel.name} placeholder="酒店名称" onChange={(event) => updateHotel(hotel.id, { name: event.target.value })} /><input aria-label="每间每晚房价" type="number" min="0" value={hotel.roomRate || ""} placeholder="房价" onChange={(event) => updateHotel(hotel.id, { roomRate: asNumber(Number(event.target.value)) })} /><span>／间／晚 ×</span><input aria-label="住宿晚数" type="number" min="1" value={hotel.nights} onChange={(event) => updateHotel(hotel.id, { nights: Math.max(1, asNumber(Number(event.target.value), 1)) })} /><span>晚</span><button className="remove" type="button" onClick={() => setHotels((current) => current.filter((item) => item.id !== hotel.id))}>×</button></div>)}<button className="add-inline" type="button" onClick={() => setHotels((current) => [...current, { id: uid(), name: "", roomRate: 0, nights: 1 }])}>＋</button><label className="single-supplement">单房差<input aria-label="单房差每人金额" type="number" min="0" value={singleSupplement} onChange={event => setSingleSupplementOverride(event.target.value === "" ? null : asNumber(Number(event.target.value)))} />元／人</label></div></CostRow>
       <CostRow travelers={travelers} title="餐" total={totals.meal}><div className="multi-lines">{meals.map((meal) => <div className="meal-inline" key={meal.id}><input value={meal.name} onChange={(event) => updateMeal(meal.id, { name: event.target.value })} /><input type="number" min="0" value={meal.price || ""} placeholder="餐标" onChange={(event) => updateMeal(meal.id, { price: asNumber(Number(event.target.value)) })} /><span>／人 ×</span><input type="number" min="1" value={meal.count} onChange={(event) => updateMeal(meal.id, { count: Math.max(1, asNumber(Number(event.target.value), 1)) })} /><span>餐</span><button className="remove" type="button" onClick={() => setMeals((current) => current.filter((item) => item.id !== meal.id))}>×</button></div>)}<button className="add-inline" type="button" onClick={() => setMeals((current) => [...current, { id: uid(), name: "特色餐", price: 0, count: 1 }])}>＋</button></div></CostRow>
       <CostRow travelers={travelers} title="用车" total={totals.vehicle}><div className="multi-lines">{groupFields(vehicles, setVehicles, "新增用车", false)}</div></CostRow>
       <CostRow travelers={travelers} title="导游" total={totals.guide}><div className="multi-lines">{groupFields(guides, setGuides, "导游服务", false)}</div></CostRow>
       <CostRow travelers={travelers} title="杂项" total={totals.other}><div className="cost-help-wrap"><div className="multi-lines">{groupFields(misc, setMisc, "新增杂项")}</div></div></CostRow>
       <CostRow travelers={travelers} title={<input className="cost-category-title" aria-label="费用栏目名称" value={leaderTitle} onChange={event => setLeaderTitle(event.target.value)} />} total={totals.leader}><div className="cost-help-wrap"><div className="multi-lines">{groupFields(leaderCosts, setLeaderCosts, "领队费用")}</div></div></CostRow>
     </section>
-    <section className="itinerary-summary"><label>报价备注<textarea rows={8} style={{display:"block",width:"100%",padding:12}} value={remarks} onChange={e=>setRemarks(e.target.value)}/></label></section>
+    <section className="itinerary-summary"><label>报价备注<textarea rows={2} style={{display:"block",width:"100%",padding:12}} value={remarks} onChange={e=>setRemarks(e.target.value)}/></label></section>
     {priceReviewRetry && <section className="itinerary-summary"><button type="button" disabled={priceReviewBusy} onClick={submitPriceReviews}>{priceReviewBusy ? "正在提交…" : "重试提交门票审核"}</button></section>}
     {copyFallback && <section className="itinerary-summary"><label>简版报价（点击文字框后全选复制）<textarea aria-label="待复制的简版报价" readOnly rows={12} style={{ display: "block", width: "100%", padding: 12, background: "#fffdf9", color: "#302a25" }} value={copyFallback} onFocus={event => event.target.select()} /></label><button type="button" onClick={() => setCopyFallback("")}>关闭</button></section>}
     <footer className="quote-result"><div><strong>{title || "未命名报价"}</strong><span>{travelers} 人核算</span></div><div className="quote-export-actions"><button type="button" disabled={exporting} onClick={exportQuote}>详细报价 Word</button><button type="button" disabled={exporting} onClick={copySimpleQuote}>复制简版报价</button></div><small role="status">{message}</small><div><span>团费合计</span><strong>{money.format(totals.total)}</strong></div><div className="highlight"><span>人均报价</span><strong>{money.format(totals.perPerson)}</strong></div></footer>

@@ -39,3 +39,5 @@
 .compact-quote .price-pill>input,.compact-quote .price-pill>.remove{position:relative;z-index:1}
 .compact-quote .price-pill>input[readonly],.compact-quote .price-pill>span{pointer-events:none}
 .compact-quote .price-pill>select{position:relative;z-index:1;flex:1;min-width:100px;max-width:270px;border:0;background:transparent;color:inherit;font:inherit;cursor:pointer;text-overflow:ellipsis}
+.compact-quote .single-supplement{display:flex;align-items:center;gap:6px;width:100%;font-size:12px;color:#716860}
+.compact-quote .single-supplement input{width:85px;height:30px;font-size:13px}
